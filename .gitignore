@@ -1,1 +1,6 @@
 *.dump
+*.csv
+*.o
+*.ref
+sanity_check
+read_channelized_data

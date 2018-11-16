@@ -156,17 +156,17 @@ for ii = 1 : nseries
     
     % Separate data into different polarisations: Vdat(1,:) and Vdat(2,:)
     Vdat = reshape(Vstream, npol, []);
-%     Nout = Nin/M;
-%     figure;
-%     subplot(221); plot((1:Nout),real(Vdat(1,1:Nout))); box on; grid on;
-%     title('v1 Real'); 
-%     subplot(223); plot((1:Nout),imag(Vdat(1,1:Nout))); box on; grid on;
-%     title('v1 Imag'); xlabel('time');
-%     subplot(222); plot((1:Nout),real(Vdat(2,1:Nout))); box on; grid on;
-%     title('v2 Real'); 
-%     subplot(224); plot((1:Nout),imag(Vdat(2,1:Nout))); box on; grid on;
-%     title('v2 Imag'); xlabel('time');
-%     pause
+    Nout = 
+    figure;
+    subplot(221); plot((1:Nout),real(Vdat(1,1:Nout))); box on; grid on;
+    title('v1 Real'); 
+    subplot(223); plot((1:Nout),imag(Vdat(1,1:Nout))); box on; grid on;
+    title('v1 Imag'); xlabel('time');
+    subplot(222); plot((1:Nout),real(Vdat(2,1:Nout))); box on; grid on;
+    title('v2 Real'); 
+    subplot(224); plot((1:Nout),imag(Vdat(2,1:Nout))); box on; grid on;
+    title('v2 Imag'); xlabel('time');
+    pause
 
     % Evaluate the channel outputs
     % First pol
@@ -186,12 +186,12 @@ for ii = 1 : nseries
         end;
     end;
 
-%     y2_plot(1:Nin/L) = y2(1,3,(1:Nin/L));
-%     subplot(211); plot((1:Nin/L),real(y2_plot(1:Nin/L))); box on; grid on;
-%     title('Output Real'); 
-%     subplot(212); plot((1:Nin/L),imag(y2_plot(1:Nin/L))); box on; grid on;
-%     title('Output Imag'); xlabel('time'); 
-%     pause
+    %y2_plot(1:Nin/L) = y2(1,3,(1:Nin/L));
+    %subplot(211); plot((1:Nin/L),real(y2_plot(1:Nin/L))); box on; grid on;
+    %title('Output Real'); 
+    %subplot(212); plot((1:Nin/L),imag(y2_plot(1:Nin/L))); box on; grid on;
+    %title('Output Imag'); xlabel('time'); 
+    %pause
     
     % Interleave polarizations and real/imag
     % (selecting just the required output channel number)
