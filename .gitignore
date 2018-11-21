@@ -4,3 +4,4 @@
 *.ref
 sanity_check
 read_channelized_data
+data/

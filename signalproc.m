@@ -76,8 +76,8 @@ close all; clear all; clc;
 % when the control interfaces are defined.
  
 % Data settings
-%fname = 'simulated_pulsar.dump';
-fname = 'os_channelized_pulsar.dump';
+%fname = 'data/simulated_pulsar.dump';
+fname = 'data/os_channelized_pulsar.dump';
 
 hdrsize = 4096; % Header size
 hdrtype = 'uint8'; % Data type for header ('uint8' = byte)
