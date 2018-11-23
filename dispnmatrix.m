@@ -10,7 +10,7 @@ function [H, f, n_hi, n_lo] = ...
 %   usable_BW - fraction of frange to be used (e.g. oversampled pass-band)
 %   Nout      - length of FFT to be analysed
 %   nfreq     - number of frequency channels
-%   DD        - DM*Dconst 
+%   DD        - DM*Dconst
 %   Tout      - sampling period of data
 %   direc     - Dispersion = 1; De-dispersion = -1 (default)
 %
@@ -24,10 +24,10 @@ function [H, f, n_hi, n_lo] = ...
 %
 % Description:
 % ------------
-% Calculates the de-dispersion matrix used to multiply the Fourier 
+% Calculates the de-dispersion matrix used to multiply the Fourier
 % transformed, filterbanked data. Also returns the number of leading and
 % trailing elements that need to be removed.
-% 
+%
 % Changes:
 % --------
 %
@@ -36,18 +36,18 @@ function [H, f, n_hi, n_lo] = ...
 % D. Hicks         21-Apr-2014  Original version
 % I. Morrison      31-Jul-2015  Added "usable_BW" for oversampled case
 % ----------------------------------------------------------------------
- 
+
 if ~exist('direc', 'var'),
     direc = -1;
 end;
-        
+
 if direc ~= -1 && direc ~= 1,
     direc = -1;
     disp('Warning: direc can only be 1 or -1');
 end;
 
 direc
- 
+
 % Vector of frequency bin assignments. Note that the highest frequency
 % bin is assigned a value of frange(2)-df where frange(2) is the Nyquist
 % frequency
@@ -55,16 +55,16 @@ bandwidth = (frange(2) - frange(1));
 deltaf = bandwidth/(Nout*nfreq); % frequency spacing
 fabs = frange(1) + (0:(Nout*nfreq-1))*deltaf;
 %fabs = linspace(frange(1), frange(2), Nout*nfreq ); %Not quite correct
- 
+
 % Absolute freqs in each channel
 fc = reshape(fabs, Nout, nfreq);
 % Mean of each freq channel
 f = mean(fc,1);
-% Expand to create matrix 
+% Expand to create matrix
 f0c = repmat(f, Nout, 1);
 % Phase dispersion
 fphi = DD*((fc-f0c).^2)./(f0c.^2)./fc*1E6;
- 
+
 %Dispersion matrix: De-dispersion has direc = -1; Dispersion has direc = 1
 H = exp(complex(0,direc)*2*pi*fphi);
 
@@ -80,15 +80,15 @@ if abs(usable_BW) < abs(bandwidth),
 end;
 
 % Calculate convolution overlap region
-%fcmin = [fabs(nnmin(1)) fabs(nnmax(1))];
+% fcmin = [fabs(nnmin(1)) fabs(nnmax(1))];
 fcmin = [ fc(1,1), fc(Nout,1) ]; %CHECK THIS !!!!!!
 fcmin0 = mean(fcmin);
- 
+
 % CHECK WHETHER n_hi and n_lo ARE FLIPPED DEPENDING ON THE DIRECTION
 % OF THE DISPERSION (i.e. DISPERSING OR DE-DISPERSING)
 n_hi = ceil(DD*(1/fcmin0^2 - 1/max(fcmin)^2)/Tout);
 n_lo = ceil(DD*(1/min(fcmin)^2 - 1/fcmin0^2)/Tout);
- 
+
 % If overlap exceeds length of vector, force there to be no overlap
 % (useful for debugging with short time series).
 if (n_hi + n_lo) >= Nout,
@@ -99,4 +99,3 @@ end;
 
 return
 end
-

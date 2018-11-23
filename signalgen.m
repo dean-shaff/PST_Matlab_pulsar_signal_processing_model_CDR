@@ -50,19 +50,17 @@ function signalgen()
 % ----------------------------------------------------------------------
 
 %=============
-
-fname = 'data/simulated_pulsar.dump';
-
 hdrsize = 4096; % Header size
 hdrtype = 'uint8'; % Data type for header ('uint8' = byte)
 ntype = 'single'; % Data type for each element in a pair ('single' = float)
 Nout = 2^20; %Length of each output vector
 nbins = 2^10; % Number of bins within a pulse period
 npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
-nseries = 30; % Number of FFT's to perform
+% nseries = 30; % Number of FFT's to perform
+nseries = 5; % Number of FFT's to perform
 noise = 0.0;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
 dformat = 'complextoreal'; %specifies conversion TO real or complex data
-%dformat = 'complextocomplex'; %specifies conversion TO real or complex data
+% dformat = 'complextocomplex'; %specifies conversion TO real or complex data
 shift = 0; % performs an fftshift before the inverse FFT
 
 % Instrument settings
@@ -74,16 +72,26 @@ f_sample_out = 80.; % Sampling frequency of output (MHz)
 % Pulsar settings
 Dconst = 4.148804E3; % s.MHz^2/(pc/cm^3)
 DM = 2.64476; % pc/cm^3
+% DM=0.0;
+% DM=1.0;
+% DM=4.0;
+% DM=10.0;
+
 pcal = struct('a',0.00575745,'b',0.0);% Pulsar period (s) and other params
 t0 = 0.0; % Absolute time (in seconds) of first time element
+
+fname = sprintf('data/simulated_pulsar.dm.%s.dump', num2str(DM));
+fname_tfp = sprintf('data/simulated_pulsar.tfp.dm.%s.dump', num2str(DM));
 
 %===============
 %Multiplying factor going from input to output type
 switch dformat
     case 'complextoreal'
         Nmul = 2;
+        ndim = 1;
     case 'complextocomplex'
         Nmul = 1;
+        ndim = 2;
     otherwise
         warning('Conversion should be complextoreal or complextocomplex.');
 end;
@@ -109,6 +117,8 @@ nclip_in = Nin - n_lo - n_hi;
 nclip_out = Nout - n_lo*Nmul - n_hi*Nmul;
 
 frac_lost = (n_lo + n_hi)/Nin; % fraction of array that's lost
+fprintf('Tout = %.5f microseconds\n', Tout * 1e6)
+fprintf('Bandwith = %f MHz\n', df)
 fprintf('Lost fraction of time series = %f\n', frac_lost);
 fprintf('Time series length = %f s\n', nclip_in*Tin);
 
@@ -123,64 +133,17 @@ trel = (0:Nin-1)*Tin;
 %===============
 % Open file for writing
 fid = fopen(fname, 'w');
+fid_tfp = fopen(fname_tfp, 'w');
 
-% create and format header
-% for the following to work on ozstar you have to set the TZ environment
-% variable to whatever the current time zone is.
-utcnow = datetime('now', 'TimeZone', 'UTC');
-utcnow = datestr(utcnow, 'yyyy-mm-dd-HH:MM:ss');
+% write_header
 
-hdr_keys = {
-  'HDR_SIZE',...
-  'HDR_VERSION',...
-  'TELESCOPE',...
-  'SOURCE',...
-  'FREQ',...
-  'BW',...
-  'TSAMP',...
-  'UTC_START',...
-  'OBS_OFFSET',...
-  'NPOL',...
-  'NDIM',...
-  'NBIT'
-};
-hdr_values = {
-  num2str(hdrsize),...
-  '1.0',...
-  'PKS',...
-  'simulated_pulsar',...
-  '1405',...
-  '80',...
-  '0.0125',...
-  utcnow,...
-  '0',...
-  num2str(npol),...
-  '2',...
-  num2str(4*8)
-};
+write_default_header(fid, hdrsize, dformat);
+write_default_header(fid_tfp, hdrsize, dformat);
 
-hdr_str = '';
-
-for i=1:numel(hdr_keys)
-   hdr_str = strcat(hdr_str, hdr_keys(i));
-   hdr_str = strcat(hdr_str, " ");
-   hdr_str = strcat(hdr_str, hdr_values(i));
-   hdr_str = strcat(hdr_str, '\n');
-end
-
-disp(hdr_str);
-
-hdr_char = char(hdr_str);
-n_remaining = hdrsize - numel(hdr_char);
-hdr_remaining = char('0' * zeros(n_remaining, 1));
-% Write header
-% hdr = zeros(hdrsize,1);
-% fwrite(fid, hdr, hdrtype);
-fwrite(fid, hdr_char, 'char');
-fwrite(fid, hdr_remaining, 'char');
 % fclose(fid);
 % return ;
-% pause
+dat_tfp = zeros(nclip_out*nseries, npol*ndim);
+
 for ii = 1:nseries,
     % Print loop number
     fprintf('Loop # %i of %i\n', ii, nseries);
@@ -258,23 +221,36 @@ for ii = 1:nseries,
     % Remove convolution overlap region
     ttclip = tt(1+n_hi : Nin-n_lo);
     z1clip = z1(1+n_hi*Nmul : Nout-n_lo*Nmul);
+%     z1clip = zeros(nclip_out, 1);
     z2clip = z2(1+n_hi*Nmul : Nout-n_lo*Nmul);
+    % z2clip = zeros(nclip_out, 1);
 
+    % starting and ending points for writing to tfp array
+    s = (ii-1)*nclip_out + 1;
+    e = ii*nclip_out;
     % Interleave polarizations into a single vector
     switch dformat
         case 'complextoreal'
             z = [z1clip, z2clip];
             dat = reshape(transpose(z),npol*nclip_out,1);
+            dat_tfp(s:e,1) = z1clip;
+            dat_tfp(s:e,2) = z2clip;
         case 'complextocomplex'
             z = [real(z1clip), imag(z1clip), real(z2clip), imag(z2clip)];
             dat = reshape(transpose(z),2*npol*nclip_out,1);
+            dat_tfp(s:e,1) = real(z1clip);
+            dat_tfp(s:e,2) = imag(z1clip);
+            dat_tfp(s:e,3) = real(z2clip);
+            dat_tfp(s:e,4) = imag(z2clip);
     end
-
     %Write vector to file
     fwrite(fid, dat, ntype);
 end;
 
+dat_tfp_flat = reshape(transpose(dat_tfp), npol*nclip_out*nseries*ndim, 1);
+fwrite(fid_tfp, dat_tfp_flat, ntype);
 fclose(fid);
+fclose(fid_tfp);
 return
 
 end
