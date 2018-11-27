@@ -50,7 +50,7 @@ function PFBchannelizer()
 close all; clear all; clc;
 
 % Input file name
-fname_in = 'data/simulated_pulsar.dump';
+fname_in = 'data/simulated_pulsar.dm.2.6448.dump';
 
 % Output file name
 %fname_out = 'cs_channelized_pulsar.dump';
@@ -95,32 +95,8 @@ dformat = 'realtocomplex'; %specifies conversion OF real or complex data
 Nin = M*(2^14);  % Number of elements per input file read
 f_sample_in = 80.; % Sampling frequency of input (MHz)
 chan_no = 3; % Particular PFB output channel number to store to file
-nseries = 2; %80; % Number of input blocks to read and process
-
-hdr_map = containers.Map('KeyType', 'char', 'ValueType', 'char');
-hdr_map('TELESCOPE') = 'PKS'; % not sure what to put here
-hdr_map('SOURCE') = 'PFBchannelizerInversion'; % not sure what to put here
-hdr_map('FREQ') = '1405'; % center frequency, from signalgen.m
-hdr_map('BW') = '80'; % bandwidth
-hdr_map('TSAMP') = '0.0125'; % convert sampling frequency to *microseconds*
-[status, cmd] = system('python -c "import datetime; print(datetime.datetime.utcnow().strftime(\"%Y-%m-%d-%H:%M:%S\"))"');
-hdr_map('UTC_START') = cmd;
-hdr_map('OBS_OFFSET') = '0';
-hdr_map('NPOL') = num2str(npol);
-hdr_map('NDIM') = '2';
-hdr_map('NBIT') = num2str(4*8);
-
-hdr_str = ''
-
-for k=keys(hdr_map)
-   hdr_str = strcat(hdr_str, k);
-   hdr_str = strcat(hdr_str, hdr_map(k{1}));
-end
-hdr_str = char(hdr_str);
-disp(size(hdr_str));
-disp(hdr_str);
-
-pause
+nseries = 80; % Number of input blocks to read and process
+% nseries = 5;
 %=============
 % Initialisations
 
@@ -149,13 +125,18 @@ fid_out_all = fopen(fname_out_all, 'w');
 
 % Write header
 hdr = zeros(hdrsize,1);
-fwrite(fid_out, hdr, hdrtype);
-fwrite(fid_out_all, hdr, hdrtype);
+
+write_default_header(fid_out, hdrsize, dformat);
+write_default_header(fid_out_all, hdrsize, dformat);
+% fwrite(fid_out, hdr, hdrtype);
+% fwrite(fid_out_all, hdr, hdrtype);
 
 % Initialise output
 y2 = zeros(npol,L,Nin/M);
-y_all = zeros(nseries, npol, L, Nin/M, 2);
-
+% y_all = zeros(L, nseries*Nin/M, npol*NperNin);
+% y_all = zeros(npol*NperNin, nseries*Nin/M, L);
+y_all = zeros(npol*Nmul, L, nseries*(Nin/M));
+% y_all = zeros(nseries*(Nin/M), L, npol*Nmul);
 %===============
 % Main loop
 % Read input blocks and filter
@@ -212,15 +193,15 @@ for ii = 1 : nseries
         end;
     end;
 
-
-
     % Interleave polarizations and real/imag
     % (selecting just the required output channel number)
     z1_y2(1:Nin/M) = y2(1,chan_no,(1:Nin/M));
     z2_y2(1:Nin/M) = y2(2,chan_no,(1:Nin/M));
     z = [real(transpose(z1_y2)), imag(transpose(z1_y2)),...
          real(transpose(z2_y2)), imag(transpose(z2_y2))];
-    dat = reshape(transpose(z),2*npol*Nin/M,1);
+    dat = reshape(transpose(z), 2*npol*Nin/M,1);
+    % Write vector to file
+    fwrite(fid_out, dat, ntype);
 %     pol1 = complex(z(:,1), z(:, 2))
 %     if ii == 1
 %        plot(x, abs(pol1).^2);
@@ -228,28 +209,40 @@ for ii = 1 : nseries
 %     disp("size(z): ")
 %     disp(size(z))
 %    x = linspace(0, 1, 16384);
-    
-    
-    
+    % starting and ending points for writing to tfp array
+    s = (ii-1)*(Nin/M) + 1;
+    e = ii*(Nin/M) ;
+    % disp(size(y_all(1,s:e,:) ))
+    % disp(size(real(y2(1,:,(1:Nin/M)))))
+    % y_all(s:e,:,1) = real(y2(1,:,(1:Nin/M)));
+    % y_all(s:e,:,2) = imag(y2(1,:,(1:Nin/M)));
+    % y_all(s:e,:,3) = real(y2(2,:,(1:Nin/M)));
+    % y_all(s:e,:,4) = imag(y2(2,:,(1:Nin/M)));
+
+    y_all(1,:,s:e) = real(y2(1,:,(1:Nin/M)));
+    y_all(2,:,s:e) = imag(y2(1,:,(1:Nin/M)));
+    y_all(3,:,s:e) = real(y2(2,:,(1:Nin/M)));
+    y_all(4,:,s:e) = imag(y2(2,:,(1:Nin/M)));
+
 %     dat_all = y2(:,:,(1:Nin/M));
-%     
+%
 %     dat_all_numel =  npol*L*(Nin/M);
 %     dat_all = reshape(dat_all, dat_all_numel, 1); % y2(1, 1, :) is polarization 1, channel 1.
 %     dat_all_z = [real(dat_all), imag(dat_all)];
 %     dat_all_z = reshape(dat_all_z, 2*dat_all_numel, 1);
-    dat_ii = y2(:,:,(1:Nin/M));
-    y_all(ii,:,:,:,1) = real(dat_ii);
-    y_all(ii,:,:,:,2) = imag(dat_ii);
-    if ii == 1
-        y2_plot(1:Nin/M) = y2(1,3,(1:Nin/M));
-        subplot(211); plot((1:Nin/M),real(y2_plot(1:Nin/M))); box on; grid on;
-        title('Pol 1 Output Real');
-        subplot(212); plot((1:Nin/M),imag(y2_plot(1:Nin/M))); box on; grid on;
-        title('Pol 1 Output Imag'); xlabel('time');
-        pause;
-    end
+    % dat_ii = y2(:,:,(1:Nin/M));
+    % y_all(ii,:,:,:,1) = real(dat_ii);
+    % y_all(ii,:,:,:,2) = imag(dat_ii);
+    % if ii == 1
+    %     y2_plot(1:Nin/M) = y2(1,3,(1:Nin/M));
+    %     subplot(211); plot((1:Nin/M),real(y2_plot(1:Nin/M))); box on; grid on;
+    %     title('Pol 1 Output Real');
+    %     subplot(212); plot((1:Nin/M),imag(y2_plot(1:Nin/M))); box on; grid on;
+    %     title('Pol 1 Output Imag'); xlabel('time');
+    %     pause;
+    % end
 
-%     
+%
 %     dat_all = reshape(dat_all_z, [npol, L, Nin/M, 2]);
 %     pol1_plot = squeeze(complex(dat_all(1,3,:,1), dat_all(1,3,:,2)));
 %     subplot(413); plot((1:Nin/M),real(pol1_plot)); box on; grid on;
@@ -261,13 +254,12 @@ for ii = 1 : nseries
 %     delta = transpose(pol1_plot) - y2_plot(1:Nin/M);
 %     disp(isequal(transpose(pol1_plot), y2_plot(1:Nin/M)))
 %     pause
-    
-    % Write vector to file
-%     fwrite(fid_out, dat, ntype);
-%     fwrite(fid_out_all, dat_all_z, ntype);
+
+
+
 end;
 
-y_all_flat = reshape(y_all, nseries*2*L*(Nin/M)*2, 1);
+y_all_flat = reshape(y_all, npol*Nmul*L*nseries*(Nin/M), 1);
 fwrite(fid_out_all, y_all_flat, ntype);
 
 fclose(fid_in);
@@ -331,6 +323,9 @@ xM(1,1:L) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
 % %Evaluating the Cross-Stream (i.e. column wise) IDFT using Packing
 % %Method
 % %The Complex-Valued Sequence of Half Size
+% Packing method leverages the fact that we're using real data to half number of
+% computations.
+
 y2C = yP(1:2:end) + 1j*yP(2:2:end);
 %The Complex IDFT of LC=L/2 Points
 IFY2C = L*L/2*ifft(y2C);
@@ -404,7 +399,9 @@ xM(1,1:L) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
 y2C = yP(1:2:end) + 1j*yP(2:2:end);
 %The Complex IDFT of LC=L/2 Points
 IFY2C = L*L/2*ifft(y2C);
-%
+% conj = complex conjugate
+% flipud = flip and array along up-down axis
+% circshift = circularly shift the elements of an array A by K elements.
 y(1:L/2) = (0.5*((IFY2C+conj(circshift(flipud(IFY2C),[+1,0])))...
             - 1j*exp(2j*pi*(0:1:L/2-1).'/L).*...
               (IFY2C-conj(circshift(flipud(IFY2C),[+1,0])))));

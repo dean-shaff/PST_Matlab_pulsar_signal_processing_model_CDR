@@ -7,3 +7,5 @@ read_channelized_data
 data/*
 products/*
 *.ar
+*.log
+*.png*

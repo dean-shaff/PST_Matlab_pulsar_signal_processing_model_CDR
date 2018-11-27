@@ -57,12 +57,12 @@ Nout = 2^20; %Length of each output vector
 nbins = 2^10; % Number of bins within a pulse period
 npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
 % nseries = 30; % Number of FFT's to perform
-nseries = 5; % Number of FFT's to perform
+nseries = 30; % Number of FFT's to perform
 noise = 0.0;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
 dformat = 'complextoreal'; %specifies conversion TO real or complex data
 % dformat = 'complextocomplex'; %specifies conversion TO real or complex data
 shift = 0; % performs an fftshift before the inverse FFT
-
+% shift = 1;
 % Instrument settings
 f0 = 1405.; % Centre frequency (MHz)
 
@@ -249,6 +249,7 @@ end;
 
 dat_tfp_flat = reshape(transpose(dat_tfp), npol*nclip_out*nseries*ndim, 1);
 fwrite(fid_tfp, dat_tfp_flat, ntype);
+
 fclose(fid);
 fclose(fid_tfp);
 return
@@ -259,6 +260,7 @@ end
 
 function [S, J, p] = rotvecmod(N, noise, showplot)
 % Rotating vector model for pulsar emission
+% showplot = true;
 
 if ~exist('N','var'),
     N = 1024;
