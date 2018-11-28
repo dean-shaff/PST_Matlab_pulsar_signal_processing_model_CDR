@@ -52,7 +52,7 @@ function signalgen()
 % ----------------------------------------------------------------------
 
 %=============
-
+verbose = 1;
 fname = 'data/simulated_pulsar.dump';
 headerFile = 'config/gen.header'; %Use a better name
 
@@ -151,7 +151,18 @@ frac_lost = (n_lo + n_hi)/Nin; % fraction of array that's lost
 fprintf('Lost fraction of time series = %f\n', frac_lost);
 fprintf('Time series length = %f s\n', nclip_in*Tin);
 
-
+%===============
+% print out diagnostic message
+if verbose
+  fprintf('Dconst: %f\n',Dconst);
+  fprintf('DM: %f\n',DM);
+  fprintf('f_sample_out: %.5f\n', f_sample_out);
+  fprintf('T_pulsar: %.5f\n', T_pulsar);
+  fprintf('Tout: %f\n',Tout);
+  fprintf('df: %f\n',df);
+  fprintf('Nin: %d\n',Nin);
+end
+return
 %===============
 % Calculate phase-dependent Stokes parameters and coherency matrix
 % using the rotating vector model

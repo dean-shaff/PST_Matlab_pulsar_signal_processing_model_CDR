@@ -1,0 +1,3057 @@
+using dsp::LoadToFold
+opening data file data/full_channelized_pulsar.dump
+dsp::File::create filename='data/full_channelized_pulsar.dump
+dsp::File::create with 22 registered sub-classes
+dsp::File::create testing Dummy
+dsp::DummyFile::is_valid first line != DUMMY
+dsp::File::create testing DADA
+dsp::File::create DADA::is_valid() returned true
+dsp::Input ctor this=0x21696b0
+dsp::File::open filename=data/full_channelized_pulsar.dump
+ASCIIObservation::load required keywords:
+  TELESCOPE
+  SOURCE
+  CALFREQ
+  FREQ
+  BW
+  NPOL
+  NBIT
+  TSAMP
+  UTC_START
+  OBS_OFFSET
+dsp::ASCIIObservation::load ndat=0
+dsp::ASCIIObservation::load UTC_START='2018-11-28-22:14:56'
+dsp::ASCIIObservation::load asctime=Wed Nov 28 22:14:56 2018
+
+dsp::ASCIIObservation::load start_mjd=58450.9
+dsp::ASCIIObservation::load couldn't load PFB oversampling factor
+DADAFile::open exit
+dsp::File::fstat_file_ndat(): buf=10490151 header_bytes=4096 tailer_bytes=0 total_bytes=10486055
+dsp::File::seek_bytes nbytes=0 header_bytes=4096
+dsp::Input::seek [INTERNAL] resolution=1 resolution_offset=0 load_sample=0
+dsp::Input::set_load_size block_size=0 resolution_offset=0
+dsp::Input::set_load_size load_size=0
+dsp::SingleThread::set_input input=0x21696b0
+dsp::Unpacker::create with 26 registered sub-classes
+dsp::Unpacker::create testing FloatUnpacker
+dsp::Transformation[FloatUnpacker]::ctor
+dsp::FloatUnpacker ctor
+dsp::Unpacker::match
+dsp::Unpacker::create return new sub-class
+dsp::dspsr::prepare pfb_os_factor: 0
+dsp::LoadToFold::construct()
+Creating WeightedTimeSeries instance
+dsp::IOManager::set_output (TimeSeries*) 0x216b190
+dsp::IOManager::set_output call Unpacker::set_output
+dsp::Transformation[FloatUnpacker]::set_output (0x216b190)
+Creating WeightedTimeSeries instance
+dsp::LoadToFold::construct: manager->get_pfb_os_factor 0
+dsp::Transformation[Filterbank]::ctor
+Init Filerbank
+dsp::Filterbank::set_engine(0x216ba50)
+dsp::Transformation[Filterbank]::set_input (0x216b190)
+dsp::Transformation[Filterbank]::set_output (0x2168460)
+dsp::Transformation[Detection]::ctor
+dsp::Transformation[Detection]::set_input (0x2168460)
+dsp::Transformation[Detection]::set_output (0x2168460)
+dsp::Detection::set_output_state to Coherency Products
+dsp::LoadToFold::build_fold
+dsp::LoadToFold::build_fold nfold=1
+dsp::LoadToFold::get_unloader prepare new Archiver
+dsp::LoadToFold::build_fold input ptr=0 unloader ptr=0x2165090
+dsp::LoadToFold::build_fold prepare Fold
+dsp::Transformation[Fold]::ctor
+dsp::PhaseSeries::init this=0x21658b0
+dsp::Transformation[Fold]::set_output (0x21658b0)
+dsp::LoadToFold::build_fold configuring
+dsp::LoadToFold::build_fold output ptr=0x21654a0
+dsp::Fold::set_input (TimeSeries* =0x2168460)
+dsp::Transformation[Fold]::set_input (0x2168460)
+dsp::Fold::set_input input is a WeightedTimeSeries
+dsp::Fold::prepare
+dsp::Fold::prepare using folding_period=0.00575745
+dsp::Fold::reset
+PhaseSeries::zero
+PhaseSeries::set_hits(0)
+PhaseSeries::zero exit
+LoadToFold::prepare config DM=2.64476
+dsp::IOManager::prepare
+dsp::IOManager::set_output (BitSeries*) 0x2165d90
+dsp::IOManager::set_output call Unpacker::set_input
+dsp::Transformation[FloatUnpacker]::set_input (0x2165d90)
+dsp::Input::set_output (BitSeries* = 0x2165d90)
+dsp::Input::prepare
+dsp::BitSeries::copy_configuration ndat=81922
+dsp::Input::prepare output start_time=58450.9
+dsp::Unpacker::prepare
+dsp::TimeSeries::set_nbit (32) ignored
+dsp::Unpacker::prepare output start_time=58450.9
+dsp::Filterbank::prepare
+dsp::Dedispersion::match before lock
+dsp::Dedispersion::match after lock
+dsp::Dedispersion::prepare input.nchan=8 channels=8
+	 centre frequency=1405 bandwidth=-80 dispersion measure=2.64476
+dsp::Dedispersion::smearing_time freq=1365 bw=5
+dsp::Dedispersion::delay_time DM=2.64476 f1=1362.5 f2=1367.5
+dsp::Dedispersion::smearing_time in the lower half of the worst channel: 0.0431493 ms
+dsp::Dedispersion::smearing_samples = 431
+dsp::Dedispersion::smearing_samples effective smear time: 0.0475 ms (475 pts).
+dsp::Dedispersion::prepare 0 unsupported channels
+dsp::Dedispersion::smearing_time freq=1375 bw=5
+dsp::Dedispersion::delay_time DM=2.64476 f1=1372.5 f2=1377.5
+dsp::Dedispersion::smearing_time in the upper half of the worst channel: 0.0422147 ms
+dsp::Dedispersion::smearing_samples = 422
+dsp::Dedispersion::smearing_samples effective smear time: 0.0465 ms (465 pts).
+dsp::Response::get_minimum_ndat impulse_tot=940 min power of two=1024
+Response::set_optimal_ndat minimum ndat=1024
+optimal_fft_length: minimum FFT:1024 maximum FFT:0
+NFFT 1024  %kept:0.0820 O(FFT):7097.8271 Timescale:84.4979
+NFFT 2048  %kept:0.5410 O(FFT):15615.2197 Timescale:14.0932
+NFFT 4096  %kept:0.7705 O(FFT):34069.5702 Timescale:10.7952
+NFFT 8192  %kept:0.8853 O(FFT):73817.4021 Timescale:10.1789
+NFFT 16384  %kept:0.9426 O(FFT):158991.3277 Timescale:10.2947
+dsp::Shape::resize  npol=2  nchan=8  ndat=8192  ndim=1
+dsp::Dedispersion::build
+  centre frequency = 1405
+  bandwidth = -80
+  dispersion measure = 2.64476
+  Doppler shift = 1
+  ndat = 8192
+  nchan = 8
+  centred on DC = 0
+  fractional delay compensation = 0
+dsp::Shape::resize  npol=1  nchan=8  ndat=8192  ndim=2
+dsp::Response::match input.nchan=8 channels=8
+dsp::Response::match swap channels (nchan=8)
+dsp::Dedispersion::match exit
+dsp::Reserve::reserve increasing reserve to 8192
+dsp::TimeSeries::change_reserve (8192)
+dsp::TimeSeries::set_nbit (32) ignored
+dsp::TimeSeries::copy_configuration ndat=0
+dsp::WeightedTimeSeries::copy_weights resize weights (ndat=0)
+dsp::WeightedTimeSeries::resize_weights nsamples=0
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::WeightedTimeSeries::convolve_weights ndat=0 + nkeep=7252 is less than nfft=8192
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::scrunch_weights nscrunch=1 ndat_per_weight=0 nweights=0 weight_idat=0
+dsp::Filterbank::_prepareOutput scrunch ndat=0
+dsp::WeightedTimeSeries::resize (0)
+dsp::TimeSeries::resize (0) data=0 buffer=0 ndat=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::WeightedTimeSeries::resize_weights nsamples=0
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::Filterbank::_prepareOutput output ndat=0scale= 6.71089e+07
+dsp::Filterbank::_prepareOutput start time += 465 samps -> 58450.9
+dsp::Dedispersion::mark no longer changing DM
+FilterbankInverseEngineCPU::setup()
+dsp::FilterbankInverseEngineCPU::setup: _nInputChannels: 8
+dsp::FilterbankInverseEngineCPU::setup: _nPolarization: 2
+dsp::FilterbankInverseEngineCPU::setup: _isRealToComplex: 0
+dsp::Detection::resize_output
+dsp::Detection::resize_output state: Coherency Products ndim=4
+dsp::Detection::resize_output reshape FROM npol=2 ndim=2 TO npol=1 ndim=4
+dsp::Fold::prepare
+dsp::Fold::prepare using folding_period=0.00575745
+dsp::Fold::reset
+PhaseSeries::zero
+PhaseSeries::set_hits(0)
+PhaseSeries::zero exit
+dsp::Response::get_minimum_ndat impulse_tot=940 min power of two=1024
+dspsr: dedispersion filter length=8192 (minimum=1024) complex samples
+dspsr: 8 channel dedispersing filterbank requires 8192 samples
+dsp::IOManager::set_overlap request overlap=0
+dsp::IOManager::set_overlap input resolution=1
+dsp::IOManager::set_overlap require overlap=0
+dsp::IOManager::set_block_size minimum_samples=8192
+dsp::IOManager::set_block_size input resolution=1
+dsp::IOManager::set_block_size copies=2 nbit=32 nbyte=12
+dsp::IOManager::set_block_size required block_size=8192
+dsp::IOManager::set_block_size minimum_RAM=0 nbyte_dat=384
+dsp::IOManager::set_block_size maximum block_size=699048
+dsp::Input::set_load_size block_size=699048 resolution_offset=0
+dsp::Input::set_load_size near end of data
+dsp::Input::set_load_size load_size=81922
+dspsr: blocksize=699048 samples or 255.999 MB
+dsp::SingleThread::run this=0x2167ae0 nops=4
+dsp::SingleThread::run operation (0): IOManager:DADA
+dsp::SingleThread::run operation (1): Filterbank
+dsp::SingleThread::run operation (2): Detection
+dsp::SingleThread::run operation (3): Fold
+dsp::IOManager::set_scratch
+dsp::IOManager::reserve
+dsp::Input::reserve block_size=699048 maximum_load_size=699048
+dsp::BitSeries::resize current size = 0 bytes -- required size = 89478144 bytes
+dsp::BitSeries::resize() setting request_ndat to 699048
+dsp::BitSeries::resize this=0x2165d90 size=89478144
+dsp::BitSeries::resize() setting request_ndat to 699048
+dsp::Unpacker::reserve input ndat=699048
+dsp::WeightedTimeSeries::resize (699048)
+dsp::TimeSeries::resize (699048) data=0 buffer=0 ndat=0
+dsp::TimeSeries::resize reserve_ndat=8192 fake_ndat=8192
+dsp::DataSeries::resize nsamp=707240 nbit=32 ndim=2 (current ndat=0)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=45263360
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=90526720 (current size=0)
+dsp::DataSeries::resize Memory::allocate (90526720)
+dsp::DataSeries::resize buffer=0x7f8f8dc53010
+dsp::DataSeries::resize memory_used=90526720
+dsp::DataSeries::reshape size=90526720 bytes (subsize=5657920 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=699048
+dsp::WeightedTimeSeries::resize_weights reserve=8192
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::Filterbank::reserve
+dsp::Filterbank::reserve input ndat=699048 overlap=940 step=7252 reserve=1 _nChannelsSmallFft=7252 npart=98 output ndat=710696
+dsp::Filterbank::_prepareOutput set ndat=710696
+dsp::WeightedTimeSeries::resize (710696)
+dsp::TimeSeries::resize (710696) data=0 buffer=0 ndat=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=710696 nbit=32 ndim=2 (current ndat=0)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=45484544
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=90969088 (current size=0)
+dsp::DataSeries::resize Memory::allocate (90969088)
+dsp::DataSeries::resize buffer=0x7f8f88591010
+dsp::DataSeries::resize memory_used=181495808
+dsp::DataSeries::reshape size=90969088 bytes (subsize=5685568 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=710696
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::TimeSeries::set_nbit (32) ignored
+dsp::TimeSeries::copy_configuration ndat=699048
+dsp::WeightedTimeSeries::copy_weights resize weights (ndat=699048)
+dsp::WeightedTimeSeries::resize_weights nsamples=699048
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::convolve_weights nfft=8192 nkeep=7252
+  ndat_per_weight=0 nweights=0 weight_idat=0 bad=0
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::scrunch_weights nscrunch=1 ndat_per_weight=0 nweights=0 weight_idat=0
+dsp::Filterbank::_prepareOutput reset ndat=710696
+dsp::WeightedTimeSeries::resize (710696)
+dsp::TimeSeries::resize (710696) data=0x7f8f88591010 buffer=0x7f8f88591010 ndat=699048
+dsp::TimeSeries::resize (710696) offset=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=710696 nbit=32 ndim=2 (current ndat=699048)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=45484544
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=90969088 (current size=90969088)
+dsp::DataSeries::reshape size=90969088 bytes (subsize=5685568 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=710696
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::Filterbank::_prepareOutput output ndat=710696scale= 6.71089e+07
+dsp::Filterbank::_prepareOutput start time += 465 samps -> 58450.9
+dsp::Dedispersion::mark no longer changing DM
+dsp::Transformation[Detection]::reserve
+reserve_trait resize ndat=710696
+dsp::WeightedTimeSeries::resize (710696)
+dsp::TimeSeries::resize (710696) data=0x7f8f88591010 buffer=0x7f8f88591010 ndat=710696
+dsp::TimeSeries::resize (710696) offset=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=710696 nbit=32 ndim=2 (current ndat=710696)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=45484544
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=90969088 (current size=90969088)
+dsp::DataSeries::reshape size=90969088 bytes (subsize=5685568 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=710696
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::Transformation[Fold]::reserve
+dsp::SingleThread::run calling IOManager:DADA
+dsp::Operation[IOManager:DADA]::operate
+dsp::Input::load before lock
+dsp::Input::load after lock
+dsp::Input::set_output (BitSeries* = 0x2165d90)
+dsp::Operation[DADA]::operate
+dsp::Input::operation [EXTERNAL] block_size=699048 next_sample=0
+dsp::BitSeries::copy_configuration ndat=81922
+dsp::Input::operation [INTERNAL] load_size=81922 load_sample=0
+dsp::Input::operation call load_data Bit_Stream::ndat=81922
+dsp::Input::reserve block_size=699048 maximum_load_size=699048
+dsp::BitSeries::resize() setting request_ndat to 699048
+dsp::BitSeries::resize() setting request_ndat to 699048
+dsp::Seekable::load_data
+   load_size=81922
+   load_sample=0
+   current_sample=0
+dsp::Seekable::recycle_data no input_sample
+dsp::Seekable::load_data
+   recycled=0
+   read_size=81922
+   read_sample=0
+dsp::Seekable::load_data total ndat=81922 read_sample=0
+dsp::Seekable::load_data 81922 samples remaining
+dsp::Seekable::load_data end of data read_size=81922
+dsp::Seekable::load_data call load_bytes(10486016)
+dsp::File::load_bytes nbytes=10486016
+dsp::File::load_bytes bytes_read=10486016 old_pos=4096 new_pos=10490112 end_pos=10490112
+dsp::Input::operation load_data done load_sample=0 name='DADA'
+dsp::Input::operation total_ndat=81922 available=81922 < block_size=699048
+dsp::Input::operation useful ndat=81922
+dsp::BitSeries::resize() setting request_ndat to 81922
+dsp::Input::operation eod request_ndat=81922
+dsp::Input::operation calling seek(81922)
+dsp::Input::seek [INTERNAL] resolution=1 resolution_offset=0 load_sample=81922
+dsp::Input::set_load_size block_size=699048 resolution_offset=0
+dsp::Input::set_load_size near end of data
+dsp::Input::set_load_size load_size=0
+dsp::Input::operation exit with load_sample=81922
+dsp::Input::load exit
+dsp::Operation[FloatUnpacker]::operate
+dsp::Transformation[FloatUnpacker]::operation call vchecks
+dsp::Transformation[FloatUnpacker]::vchecks input checks
+dsp::Transformation[FloatUnpacker]::vchecks done
+dsp::Transformation[FloatUnpacker]::operation transformation
+dsp::Unpacker::transformation
+dsp::Unpacker::prepare
+dsp::TimeSeries::set_nbit (32) ignored
+dsp::Unpacker::prepare output start_time=58450.9
+dsp::Unpacker::reserve input ndat=81922
+dsp::WeightedTimeSeries::resize (81922)
+dsp::TimeSeries::resize (81922) data=0x7f8f8dc63010 buffer=0x7f8f8dc53010 ndat=81922
+dsp::TimeSeries::resize (81922) offset=16384
+dsp::TimeSeries::resize reserve_ndat=8192 fake_ndat=8192
+dsp::DataSeries::resize nsamp=90114 nbit=32 ndim=2 (current ndat=81922)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=5767296
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=11534592 (current size=90526720)
+dsp::DataSeries::reshape size=90526720 bytes (subsize=720912 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=81922
+dsp::WeightedTimeSeries::resize_weights reserve=8192
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::FloatUnpacker order is TimeSeries::OrderFPT
+dsp::Unpacker::tranformation TimeSeries book-keeping
+  input_sample=0  seek=0  ndat=81922
+dsp::WeightedTimeSeries::seek (0) base=0 weights=0 diff=0
+dsp::TimeSeries::decrease_ndat from 81922 to 81922
+dsp::Unpacker::transformation exit
+dsp::Transformation[FloatUnpacker]::operation check output
+dsp::SingleThread::run IOManager:DADA done
+dsp::SingleThread::run calling Filterbank
+dsp::Operation[Filterbank]::operate
+dsp::Transformation[Filterbank]::operation call vchecks
+dsp::Transformation[Filterbank]::vchecks input checks
+dsp::Transformation[Filterbank]::vchecks done
+dsp::Transformation[Filterbank]::operation
+  calling InputBuffering::pre_transformation input sample=0
+dsp::Transformation[Filterbank]::operation transformation
+dsp::Filterbank::transformation input ndat=81922 nchan=8
+dsp::Filterbank::reserve input ndat=81922 overlap=940 step=7252 reserve=0 _nChannelsSmallFft=7252 npart=11 output ndat=79772
+dsp::Filterbank::_prepareOutput set ndat=79772
+dsp::WeightedTimeSeries::resize (79772)
+dsp::TimeSeries::resize (79772) data=0x7f8f88591010 buffer=0x7f8f88591010 ndat=710696
+dsp::TimeSeries::resize (79772) offset=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=79772 nbit=32 ndim=2 (current ndat=710696)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=5105408
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=10210816 (current size=90969088)
+dsp::DataSeries::reshape size=90969088 bytes (subsize=638176 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=79772
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::TimeSeries::set_nbit (32) ignored
+dsp::TimeSeries::copy_configuration ndat=81922
+dsp::WeightedTimeSeries::copy_weights resize weights (ndat=81922)
+dsp::WeightedTimeSeries::resize_weights nsamples=81922
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::convolve_weights nfft=8192 nkeep=7252
+  ndat_per_weight=0 nweights=0 weight_idat=0 bad=0
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::WeightedTimeSeries::scrunch_weights nscrunch=1 ndat_per_weight=0 nweights=0 weight_idat=0
+dsp::Filterbank::_prepareOutput reset ndat=79772
+dsp::WeightedTimeSeries::resize (79772)
+dsp::TimeSeries::resize (79772) data=0x7f8f88591010 buffer=0x7f8f88591010 ndat=81922
+dsp::TimeSeries::resize (79772) offset=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=79772 nbit=32 ndim=2 (current ndat=81922)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=5105408
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=10210816 (current size=90969088)
+dsp::DataSeries::reshape size=90969088 bytes (subsize=638176 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=79772
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::Filterbank::_prepareOutput output ndat=79772scale= 6.71089e+07
+dsp::Filterbank::_prepareOutput start time += 465 samps -> 58450.9
+dsp::Dedispersion::mark no longer changing DM
+dsp::InputBuffering::set_next_start next=79772 ndat=81922
+dsp::InputBuffering::set_next_start saving 2150 samples
+dsp::InputBuffering::set_next_start null_clone input
+dsp::WeightedTimeSeries::null_clone
+dsp::InputBuffering::set_next_start copying from input sample 79772
+dsp::InputBuffering::set_next_start resize buffer minimum_samples=8192
+dsp::WeightedTimeSeries::resize (8192)
+dsp::TimeSeries::resize (8192) data=0 buffer=0 ndat=0
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=8192 nbit=32 ndim=2 (current ndat=0)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=524288
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=1048576 (current size=0)
+dsp::DataSeries::resize Memory::allocate (1048576)
+dsp::DataSeries::resize buffer=0x7f8f88490010
+dsp::DataSeries::resize memory_used=182544384
+dsp::DataSeries::reshape size=1048576 bytes (subsize=65536 bytes)
+dsp::WeightedTimeSeries::resize_weights nsamples=8192
+dsp::WeightedTimeSeries::resize_weights reserve=0
+dsp::WeightedTimeSeries::resize_weights nweights=0 require=0 have=0
+dsp::WeightedTimeSeries::copy_data TimeSeries::copy_data
+dsp::TimeSeries::copy_data to ndat=8192 from ndat=81922
+  idat_start=79772 copy_ndat=2150
+dsp::WeightedTimeSeries::copy_data call copy_weights
+dsp::Filterbank::transformation npart=11 _nChannelsSmallFft=7252 output_ndat=79772
+dsp::Filterbank::transformation after prepare output ndat=79772 input_sample=0
+have engine
+FilterbankInverseEngineCPU::set_scratch(0)
+FilterbankInverseEngineCPU::perform()
+dsp::FilterbankInverseEngineCPU::perform: nParts: 11
+dsp::FilterbankInverseEngineCPU::perform: inStep: 14504
+dsp::FilterbankInverseEngineCPU::perform: nInputChannels: 8
+dsp::FilterbankInverseEngineCPU::perform: nPolarization: 2
+dsp::FilterbankInverseEngineCPU::perform: nOutputChannels: 1
+dsp::FilterbankInverseEngineCPU::perform: _nFftSamples: 8192
+FilterbankInverseEngineCPU::perform: done
+dsp::Filterbank::transformation return with output ndat=79772
+dsp::Transformation[Filterbank]::operation post_transformation
+dsp::Transformation[Filterbank]::operation check output
+dsp::SingleThread::run Filterbank done
+dsp::SingleThread::run calling Detection
+dsp::Operation[Detection]::operate
+dsp::Transformation[Detection]::operation call vchecks
+dsp::Transformation[Detection]::vchecks input checks
+dsp::Transformation[Detection]::vchecks done
+dsp::Transformation[Detection]::operation transformation
+dsp::Detection::transformation input ndat=79772 state=Baseband Quadrature output state=Coherency Products
+dsp::Detection::polarimetry ndim=4
+dsp::Detection::polarimetry inplace
+dsp::Detection::polarimetry require_floats=159544
+dsp::Detection::polarimetry copy_bytes=638176
+dsp::Detection::get_result_pointers ndim=4
+dsp::Detection::polarimetry exit
+dsp::Detection::resize_output
+dsp::Detection::resize_output state: Coherency Products ndim=4
+dsp::Detection::resize_output reshape FROM npol=2 ndim=2 TO npol=1 ndim=4
+dsp::Detection::transformation exit
+dsp::Transformation[Detection]::operation check output
+dsp::SingleThread::run Detection done
+dsp::SingleThread::run calling Fold
+dsp::Operation[Fold]::operate
+dsp::Transformation[Fold]::operation call vchecks
+dsp::Transformation[Fold]::vchecks input checks
+dsp::Transformation[Fold]::vchecks done
+dsp::Transformation[Fold]::operation transformation
+dsp::Fold::transformation
+dsp::Fold::transformation choose_nbin
+dsp::Fold::choose_nbin
+dsp::Fold::choose_nbin folding_period=0.00575745
+dsp::Fold::choose_nbin sampling_period=1.3672e-08
+dsp::Fold::choose_nbin minimum_bin_width=1.2 bins or 1.64064e-08 seconds
+dsp::Fold::choose_nbin sensible nbin=350927
+dsp::Fold::choose_nbin largest power of 2 < nbin=262144
+dsp::Fold::choose_nbin using maximum nbin=1024
+dsp::Fold::transformation call Fold::prepare_output
+dsp::Fold::prepare_output call PhaseSeries::mixable
+PhaseSeries::mixable start mix=58450.92703704 cur=0.00000000
+PhaseSeries::mixable reset
+dsp::TimeSeries::set_nbit (32) ignored
+dsp::PhaseSeries::mixable rate=7.31422e+07
+dsp::PhaseSeries::mixable calling set_order
+dsp::PhaseSeries::mixable calling set_zeroed_data
+dsp::PhaseSeries::mixable calling resize(1024)
+dsp::PhaseSeries::resize nbin=1024
+dsp::TimeSeries::resize (1024) data=0 buffer=0 ndat=79772
+dsp::TimeSeries::resize reserve_ndat=0 fake_ndat=0
+dsp::DataSeries::resize nsamp=1024 nbit=32 ndim=4 (current ndat=79772)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=131072
+dsp::DataSeries::resize npol=1 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=131072 (current size=0)
+dsp::DataSeries::resize Memory::allocate (131072)
+dsp::DataSeries::resize buffer=0x21c54e0
+dsp::DataSeries::resize memory_used=182675456
+dsp::DataSeries::reshape size=131072 bytes (subsize=16384 bytes)
+dsp::PhaseSeries::resize_hits nchan=8 nbin=1024 hits_nchan=1
+dsp::PhaseSeries::resize_hits Memory::do_allocate (4096)
+dsp::PhaseSeries::mixable calling zero()
+PhaseSeries::zero
+PhaseSeries::set_hits(0)
+PhaseSeries::zero exit
+dsp::WeightedTimeSeries::get_nweights weight_idat=0 nweights=0
+dsp::Fold::transformation WeightedTimeSeries weights=0 ndatperweight=0
+dsp::Fold::fold 0 idat_start=0 ndat_fold=79772
+dsp::Fold::fold 0 ndat_folded=79772 ndat_fold=79772 time=1.09064 ms (bad=0/0) ndatperweight=0
+dsp::Fold::fold ndim=4 folding_nbin=1024 nbin=1024 npol=1
+dsp::Transformation[Fold]::operation check output
+dsp::SingleThread::run Fold done
+Finished 0 s   dsp::SingleThread::run end of data id=0
+dsp::SingleThread::run exit
+Creating archive 1
+dsp::Archiver::unload profiles=0x21658b0
+dsp::Archiver::unload folded 79772 out of 79772 total samples: 100%
+dsp::Archiver::new_Archive new Baseband
+IntegrationManager null constructor
+Pulsar::Archive ctor this=0x216dbc0 instances=1
+Pulsar::Archive::init
+Pulsar::TimerArchive default constructor
+BasebandArchive default construct
+dsp::Archiver::unload set Pulsar::Archive
+dsp::Archiver::set Pulsar::Archive
+dsp::Archiver::set Pulsar::Archive nsub=1 npol=4 nchan=8 nbin=1024 fourth=0
+Archive::resize nsub=1 npol=4 nchan=8 nbin=1024
+ old nsub=0 npol=0 nchan=0 nbin=0
+Pulsar::Archive::resize subints
+Pulsar::IntegrationManager::_resize nsub=1  old nsub=0
+Pulsar::TimerArchive::new_Integration
+Pulsar::Integration ctor this=0x21a25f0
+Pulsar::IntegrationManager::_resize exit
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar16IntegrationOrderE
+Pulsar::IntegrationManager::get_Integration subint=0
+Pulsar::Archive::init_Integration check_phase=0
+Pulsar::IntegrationManager::get_Integration subint=0
+TimerIntegration::resize (npol=4, nchan=8, nbin=1024)
+Integration::resize npol=4 nchan=8 nbin=1024
+ old npol=0 nchan=0 nbin=0
+Pulsar::Archive::resize calling book-keeping functions
+Pulsar::Archive::resize calling resize for each extension
+Pulsar::Archive::resize exit
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar16FITSHdrExtensionE
+dsp::Archiver::set Archive source=J1644-4559
+  coord=16:44:49.280-45:59:09.50
+  bw=-80
+  freq=1405
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar7BackendE
+dsp::Archiver::set Pulsar::Backend extension
+Pulsar::Archive::add_extension appending Backend
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar12dspReductionE
+Pulsar::Archive::add_extension appending dspReduction
+dsp::Archiver::set Pulsar::dspReduction extension
+dsp::Archiver::set Pulsar::dspReduction start
+dsp::Archiver::pack dspReduction Convolution with Response
+dsp::Archiver::set_coherent_dedispersion
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar20CoherentDedispersionE
+Pulsar::Archive::add_extension appending CoherentDedisperion
+dsp::Archiver::set_coherent_dedispersion adding extension
+Pulsar::IntegrationManager::get_Integration subint=0
+dsp::Archiver::set Pulsar::Integration
+PhaseSeries::get_mid_time start=58450.9 end=58450.9
+dsp::Archiver::set epoch=58450.9270369995667 duration=0.00109064 period=0.00575745
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=0 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=0 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+dsp::Archiver::set Pulsar::Profile WARNING 109 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=0 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=0 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 110 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=0 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=0 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+dsp::Archiver::set Pulsar::Profile WARNING 154 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=0 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=0 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+dsp::Archiver::set Pulsar::Profile WARNING 154 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ichan=0 contains corrupted data
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=1 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=1 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=18
+dsp::Archiver::set Pulsar::Profile WARNING 113 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=1 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=1 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=18
+dsp::Archiver::set Pulsar::Profile WARNING 101 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=1 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=1 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=18
+dsp::Archiver::set Pulsar::Profile WARNING 149 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=1 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=1 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=18
+dsp::Archiver::set Pulsar::Profile WARNING 149 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ichan=1 contains corrupted data
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=2 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=2 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=18
+dsp::Archiver::set Pulsar::Profile WARNING 105 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=2 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=2 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 112 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=2 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=2 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 153 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=2 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=2 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=384
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 153 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ichan=2 contains corrupted data
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=3 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=3 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 108 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=3 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=3 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 96 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=3 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=3 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 148 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=3 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=3 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 148 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ichan=3 contains corrupted data
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=4 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=4 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 12 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=4 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=4 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=4 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=4 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 6 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=4 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=4 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=411
+non-finite: hit=412
+non-finite: hit=411
+non-finite: hit=411
+dsp::Archiver::set Pulsar::Profile WARNING 6 out of 1024 bins with non-finite amplitudes
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ichan=4 contains corrupted data
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=5 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=5 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=5 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=5 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=5 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=5 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=5 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=5 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=6 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=6 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=6 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=6 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=6 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=6 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=6 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=6 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=0 ichan=7 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=7 ipol=0 idim=0
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=1 ichan=7 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=7 ipol=0 idim=1
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=2 ichan=7 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=7 ipol=0 idim=2
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+dsp::Archiver::set Pulsar::Integration ipol=3 ichan=7 nbin=1024
+dsp::Archiver::set Pulsar::Profile ichan=7 ipol=0 idim=3
+dsp::Archiver::set Pulsar::Profile scale=6.71089e+07
+dsp::Archiver::set Pulsar::Profile WARNING 829 out of 1024 bins with zero hits
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar11TwoBitStatsE
+Pulsar::Archive::add_extension appending TwoBitStats
+dsp::Archiver::set Pulsar::TwoBitStats extension
+dsp::Archiver::set Pulsar::TwoBitStats Extension
+dsp::Archiver::set Pulsar::TwoBitStats no ExcisionUnpacker
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar8PassbandE
+Pulsar::Archive::add_extension appending Passband
+dsp::Archiver::set Pulsar::Passband extension
+dsp::Archiver::set Pulsar::Passband Extension
+dsp::Archiver::set Pulsar::Passband no passband
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar9TelescopeE
+Pulsar::Archive::add_extension appending Telescope
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> name=Telescope
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar8ReceiverE
+Pulsar::Archive::add_extension appending Receiver
+dsp::Archiver::set PhaseSeries has no predictor
+dsp::FilenameEpoch::get_filename epoch=58450:221456.000006357480000
+unloading 0.0011 seconds: products/inverse.28-11-2018
+dsp::Archiver set archive filename to 'products/inverse.28-11-2018.ar'
+dsp::Archiver::unload archive 'products/inverse.28-11-2018.ar'
+Pulsar::Archive::verify testing CalSource
+Pulsar::Archive::verify testing DeFaradayed
+Pulsar::Archive::verify applying DeFaradayed
+Pulsar::DeFaradayed::apply verification
+Pulsar::IntegrationManager::get_Integration const
+Pulsar::IntegrationManager::get_Integration subint=0
+Pulsar::Integration::get<Ext> failed to find extension type=PKN6Pulsar9DeFaradayE
+Pulsar::Archive::unload (products/inverse.28-11-2018.ar)
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> name=Telescope
+Pulsar::Archive::get<Ext> name=Receiver
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar16IntegrationOrderE
+TimerArchive::unload opened 'products/inverse.28-11-2018.ar.XXgA94bf'
+Pulsar::TimerArchive::pack_extensions
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> name=Telescope
+Pulsar::Archive::get<Ext> name=Receiver
+Pulsar::TimerArchive::pack Receiver
+Pulsar::TimerArchive::pack Receiver
+	X_offset=0deg
+	Y_offset=0deg
+	calibrator_offset=0deg
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> name=Telescope
+Pulsar::Archive::get<Ext> name=Receiver
+Pulsar::Archive::get<Ext> failed to find extension type=PKN6Pulsar8TapeInfoE
+Pulsar::TimerArchive::pack_extensions no TapeInfo
+Pulsar::Archive::get<Ext> name=Backend
+TimerArchive::hdr_unload correcting archive
+Pulsar::BasebandArchive::correct
+Pulsar::BasebandArchive::set_header
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::BasebandArchive::check_extensions
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::BasebandArchive::check_extensions Passband nfreq=0 nchan=0
+Pulsar::BasebandArchive::check_be_data_size sizeof(baseband_header)=184
+Pulsar::BasebandArchive::check_extensions
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::BasebandArchive::check_extensions Passband nfreq=0 nchan=0
+Pulsar::IntegrationManager::get_Integration const
+Pulsar::IntegrationManager::get_Integration subint=0
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> name=Telescope
+Pulsar::IntegrationManager::get_Integration subint=0
+Pulsar::IntegrationManager::get_Integration subint=0
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::Archive::get<Ext> name=Telescope
+Pulsar::IntegrationManager::get_Integration subint=0
+Pulsar::TimerArchive::get_coordinates 16:44:49.280-45:59:09.50
+TimerArchive::hdr_unload predictor size = 0 bytes
+TimerArchive::hdr_unload parameters size = 0 bytes
+Pulsar::BasebandArchive::set_header
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::BasebandArchive::check_extensions
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::BasebandArchive::check_extensions Passband nfreq=0 nchan=0
+Pulsar::BasebandArchive::check_be_data_size sizeof(baseband_header)=184
+Pulsar::BasebandArchive::check_extensions
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Backend
+Pulsar::Archive::get<Ext> name=dspReduction
+Pulsar::Archive::get<Ext> name=CoherentDedisperion
+Pulsar::Archive::get<Ext> name=TwoBitStats
+Pulsar::Archive::get<Ext> name=Passband
+Pulsar::BasebandArchive::check_extensions Passband nfreq=0 nchan=0
+TimerArchive::hdr_unload backend data size = 184 bytes
+Pulsar::IntegrationManager::get_Integration const
+Pulsar::IntegrationManager::get_Integration subint=0
+TimerArchive::hdr_unload writing timer header
+BasebandArchive::backend_unload header size=184
+BasebandArchive::backend_unload exit
+TimerArchive::unload nsubint=1 nchan=8 npol=4 nbin=1024
+TimerArchive::subint_unload 1/1
+Pulsar::IntegrationManager::get_Integration const
+Pulsar::IntegrationManager::get_Integration subint=0
+TimerIntegration::unload epoch=58450.9270369996 period=0.00575745
+Pulsar::Integration::get<Ext> failed to find extension type=PKN6Pulsar8PointingE
+Pulsar::TimerIntegration::unload extra start offset=1336
+TimerIntegration::unload writing 8 weights
+TimerIntegration::unload writing 4x8 med
+TimerIntegration::unload writing 4x8 bpass
+Pulsar::TimerIntegration::unload extra end offset=1624
+TimerIntegration::unload unloading profiles npol=4 nchan=8
+TimerIntegration::unload ipol=0	 ichan=0
+Pulsar::TimerProfile_unload start offset=1624Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=3696TimerIntegration::unload ipol=0	 ichan=1
+Pulsar::TimerProfile_unload start offset=3696Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=5768TimerIntegration::unload ipol=0	 ichan=2
+Pulsar::TimerProfile_unload start offset=5768Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=7840TimerIntegration::unload ipol=0	 ichan=3
+Pulsar::TimerProfile_unload start offset=7840Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=9912TimerIntegration::unload ipol=0	 ichan=4
+Pulsar::TimerProfile_unload start offset=9912Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=11984TimerIntegration::unload ipol=0	 ichan=5
+Pulsar::TimerProfile_unload start offset=11984Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=14056TimerIntegration::unload ipol=0	 ichan=6
+Pulsar::TimerProfile_unload start offset=14056Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=16128TimerIntegration::unload ipol=0	 ichan=7
+Pulsar::TimerProfile_unload start offset=16128Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=18200TimerIntegration::unload ipol=1	 ichan=0
+Pulsar::TimerProfile_unload start offset=18200Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=20272TimerIntegration::unload ipol=1	 ichan=1
+Pulsar::TimerProfile_unload start offset=20272Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=22344TimerIntegration::unload ipol=1	 ichan=2
+Pulsar::TimerProfile_unload start offset=22344Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=24416TimerIntegration::unload ipol=1	 ichan=3
+Pulsar::TimerProfile_unload start offset=24416Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=26488TimerIntegration::unload ipol=1	 ichan=4
+Pulsar::TimerProfile_unload start offset=26488Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=28560TimerIntegration::unload ipol=1	 ichan=5
+Pulsar::TimerProfile_unload start offset=28560Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=30632TimerIntegration::unload ipol=1	 ichan=6
+Pulsar::TimerProfile_unload start offset=30632Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=32704TimerIntegration::unload ipol=1	 ichan=7
+Pulsar::TimerProfile_unload start offset=32704Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=34776TimerIntegration::unload ipol=2	 ichan=0
+Pulsar::TimerProfile_unload start offset=34776Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=36848TimerIntegration::unload ipol=2	 ichan=1
+Pulsar::TimerProfile_unload start offset=36848Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=38920TimerIntegration::unload ipol=2	 ichan=2
+Pulsar::TimerProfile_unload start offset=38920Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=40992TimerIntegration::unload ipol=2	 ichan=3
+Pulsar::TimerProfile_unload start offset=40992Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=43064TimerIntegration::unload ipol=2	 ichan=4
+Pulsar::TimerProfile_unload start offset=43064Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=45136TimerIntegration::unload ipol=2	 ichan=5
+Pulsar::TimerProfile_unload start offset=45136Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=47208TimerIntegration::unload ipol=2	 ichan=6
+Pulsar::TimerProfile_unload start offset=47208Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=49280TimerIntegration::unload ipol=2	 ichan=7
+Pulsar::TimerProfile_unload start offset=49280Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=51352TimerIntegration::unload ipol=3	 ichan=0
+Pulsar::TimerProfile_unload start offset=51352Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=53424TimerIntegration::unload ipol=3	 ichan=1
+Pulsar::TimerProfile_unload start offset=53424Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=55496TimerIntegration::unload ipol=3	 ichan=2
+Pulsar::TimerProfile_unload start offset=55496Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=57568TimerIntegration::unload ipol=3	 ichan=3
+Pulsar::TimerProfile_unload start offset=57568Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=59640TimerIntegration::unload ipol=3	 ichan=4
+Pulsar::TimerProfile_unload start offset=59640Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=61712TimerIntegration::unload ipol=3	 ichan=5
+Pulsar::TimerProfile_unload start offset=61712Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=63784TimerIntegration::unload ipol=3	 ichan=6
+Pulsar::TimerProfile_unload start offset=63784Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=65856TimerIntegration::unload ipol=3	 ichan=7
+Pulsar::TimerProfile_unload start offset=65856Pulsar::TimerProfile_unload fcompwrite data nbin=1024Pulsar::TimerProfile_unload end offset=67928TimerIntegration::unload exit
+TimerArchive::subint_unload 1/1 unloaded
+TimerArchive::subint_unload exit
+BasebandArchive destructor
+Pulsar::TimerArchive destructor
+Pulsar::Archive dtor this=0x216dbc0 instances=0
+Pulsar::IntegrationManager dtor this=0x216dbc0
+TimerIntegration destructor
+Pulsar::Integration dtor this=0x21a25f0
+dsp::Transformation[Filterbank]::dtor
+dsp::DataSeries::resize nsamp=0 nbit=32 ndim=2 (current ndat=2150)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=0
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=0 (current size=1048576)
+dsp::DataSeries::resize Memory::free size=1048576 buffer=0x7f8f88490010
+dsp::Transformation[Detection]::dtor
+dsp::Transformation[Fold]::dtor
+dsp::PhaseSeries::~PhaseSeries this=0x21658b0 hits=0x216cbb0
+dsp::DataSeries::resize nsamp=0 nbit=32 ndim=4 (current ndat=1024)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=0
+dsp::DataSeries::resize npol=1 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=0 (current size=131072)
+dsp::DataSeries::resize Memory::free size=131072 buffer=0x21c54e0
+dsp::DataSeries::resize nsamp=0 nbit=32 ndim=4 (current ndat=79772)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=0
+dsp::DataSeries::resize npol=1 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=0 (current size=90969088)
+dsp::DataSeries::resize Memory::free size=90969088 buffer=0x7f8f88591010
+dsp::Transformation[FloatUnpacker]::dtor
+dsp::DataSeries::resize nsamp=0 nbit=32 ndim=2 (current ndat=81922)
+dsp::DataSeries::resize nbits=nsamp*nbit*ndim=0
+dsp::DataSeries::resize npol=2 nchan=8
+dsp::DataSeries::resize nbytes=nbits/8*npol*nchan=0 (current size=90526720)
+dsp::DataSeries::resize Memory::free size=90526720 buffer=0x7f8f8dc53010
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+Pulsar::Archive::Agent::~Agent
+dsp::Transformation[GenericFourBitUnpacker]::dtor
+dsp::Transformation[GenericEightBitUnpacker]::dtor
+dsp::Transformation[SigProcUnpacker]::dtor
+dsp::Transformation[S2TwoBitCorrection]::dtor
+dsp::Transformation[PuMa2Unpacker]::dtor
+dsp::Transformation[OneBitCorrection]::dtor
+dsp::Transformation[EDAFourBit]::dtor
+dsp::Transformation[MaximUnpacker]::dtor
+dsp::Transformation[Mark5TwoBitCorrection]::dtor
+dsp::Transformation[Mark5Unpacker]::dtor
+dsp::Transformation[Mark4TwoBitCorrection]::dtor
+dsp::Transformation[LBADR64_TwoBitCorrection]::dtor
+dsp::Transformation[SMROTwoBitCorrection]::dtor
+dsp::Transformation[GMRTFilterbank16]::dtor
+dsp::Transformation[GMRTFourBit]::dtor
+dsp::Transformation[GMRTEightBit]::dtor
+dsp::Transformation[CPSR2TwoBitCorrection]::dtor
+dsp::Transformation[CPSRTwoBitCorrection]::dtor
+dsp::Transformation[BPSRCrossUnpacker]::dtor
+dsp::Transformation[BPSRUnpacker]::dtor
+dsp::Transformation[BCPMUnpacker]::dtor
+dsp::Transformation[ASPUnpacker]::dtor
+dsp::Transformation[APSREightBit]::dtor
+dsp::Transformation[APSRFourBit]::dtor
+dsp::Transformation[APSRTwoBitCorrection]::dtor
+dsp::Transformation[FloatUnpacker]::dtor

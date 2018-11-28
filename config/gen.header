@@ -11,19 +11,19 @@ RA           16:44:49.28            # Right Ascension of the source
 DEC          -45:59:09.5            # Declination of the source
 
 FREQ         1405.000000            # centre frequency on sky in MHz
-BW           -64                    # bandwidth of in MHz (-ve lower sb)
+BW           -80                    # bandwidth of in MHz (-ve lower sb)
 TSAMP        0.01562500
 
 NBIT         32                     # number of bits per sample
-NDIM         1                      # dimension of samples (2=complex, 1=real)
+NDIM         2                      # dimension of samples (2=complex, 1=real)
 NPOL         2                      # number of polarizations observed
 
 EDGE         0
 LEVEL        300
 CALFREQ      200.
-MODE         CAL
-NMBYTES      5120
-BUFFERSIZE   33554432
+MODE         PSR
+# NMBYTES      5120
+# BUFFERSIZE   33554432
 HALT         0
 OBS_OFFSET   0
 INSTRUMENT   dspsr

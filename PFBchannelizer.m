@@ -47,7 +47,10 @@ function PFBchannelizer()
 %                               Added Header read and write
 %
 % ----------------------------------------------------------------------
-close all; clear all; clc;
+% close all;
+clear all; clc;
+
+verbose = 1;
 
 % Input file name
 fname_in = 'data/simulated_pulsar.dump';
@@ -100,42 +103,29 @@ De = 7; %Denominator
 %=============
 % Header settings for variables, where they exist
 %
-headerMap = read_header(headerFileName, containers.Map());
-for key=keys(headerMap)
-  fprintf('%s, %s\n', key{1}, headerMap(key{1}));
-end
-
-
-return;
-
-% Get data from header
-headerMap = containers.Map; %empty map
-for fname=fnames_out
-  headerMap = headerReadWrite(headerFileName, fname{1}, headerMap);
-end
-% headerMap = headerReadWrite(headerFile, fname_out, headerMap);
+hdr_map = read_header(headerFileName, containers.Map());
 
 % Header size
-if isKey(headerMap,'HDR_SIZE') hdrsize = str2num(headerMap('HDR_SIZE')); end
+if isKey(hdr_map,'HDR_SIZE') hdrsize = str2num(hdr_map('HDR_SIZE')); end
 % Number of polarizations
-if isKey(headerMap,'NPOL') npol = str2num(headerMap('NPOL')); end
+if isKey(hdr_map,'NPOL') npol = str2num(hdr_map('NPOL')); end
 
 % Set bandwidth
-if isKey(headerMap,'BW') f_sample_in = (-1)*str2num(headerMap('BW')); end % Samplin    g frequency of input (MHz)
+if isKey(hdr_map,'BW') f_sample_in = (-1)*str2num(hdr_map('BW')); end % Samplin    g frequency of input (MHz)
 
 % Multiplying factor going from output to input type
 %
 % NDIM is 1 for real input data and 2 for complex input data
-if isKey(headerMap,'NDIM')
-    if str2num(headerMap('NDIM'))==1 dformat='realtocomplex';
-    elseif str2num(headerMap('NDIM'))==2 dformat='complextocomplex';
+if isKey(hdr_map,'NDIM')
+    if str2num(hdr_map('NDIM'))==1 dformat='realtocomplex';
+    elseif str2num(hdr_map('NDIM'))==2 dformat='complextocomplex';
     else warning('NDIM in header file should be 1 or 2.')
     end
 end
 
 % Over-Sampling Factor
-if isKey(headerMap,'OS_FACTOR')
-    splitInput = strsplit(headerMap('OS_FACTOR'),'/'); %what if OS_FACTOR is just 1?
+if isKey(hdr_map,'OS_FACTOR')
+    splitInput = strsplit(hdr_map('OS_FACTOR'),'/'); %what if OS_FACTOR is just 1?
     Nu = str2num(splitInput{1});
     De = str2num(splitInput{2});
     if (Nu == 1 && De == 1)
@@ -150,7 +140,7 @@ end
 hdrtype = 'uint8'; % Data type for header ('uint8' = byte)
 ntype = 'single'; % Data type for each element in a pair ('single' = float)
 chan_no = 3; % Particular PFB output channel number to store to fill
-nseries = 2; % Number of input blocks to read and process
+nseries = 5; % Number of input blocks to read and process
 
 %=============
 % Initialisations
@@ -166,7 +156,7 @@ else % Over sampled
 end;
 
 % Number of channels in filter-bank
-L= 16;
+L= 8;
 M = L/Os; % Commutator Length
 L_M = L-M; % Overlap
 Nin = M*(2^14);  % Number of elements per input file read
@@ -184,24 +174,13 @@ switch dformat
         warning('Conversion should be realtocomplex or complextocomplex.');
 end
 
+%=============
+% Write header data to out files
+write_header(fname_out, hdr_map);
+% update NCHAN in full channelized output file
+hdr_map('NCHAN') = num2str(L);
+write_header(fname_out_full, hdr_map);
 
-%==============
-% Fill up the header completely by appending null characters, \0
-
-% Get current size of output file (just the header so far)
-for fname=fnames_out
-
-  hdrfile=dir(fname{1});
-  hdr_currentsize=hdrfile.bytes;
-
-  % Append the remainder as nulls
-  fid_out = fopen(fname{1}, 'a');
-  % fid_out_full = fopen(fname_out_full, 'a');
-  for i=1:(hdrsize-hdr_currentsize)
-      fprintf(fid_out,'\0');
-  end
-  fclose(fid_out);
-end
 %==============
 % Prepare for main loop
 
@@ -220,11 +199,24 @@ y2 = zeros(npol,L,Nin/M);
 % Initial full channelized output,
 % for ordering in TFP (Time Frequency Polarization)
 % This ordering is required in order to be read by dspsr
-y_full_channel = zeros(npol*2, L, Nin/M, nseries);
+y_full_channel = zeros(npol*2, L, (Nin/M)*nseries);
 
 %===============
 % Main loop
 % Read input blocks and filter
+if verbose
+  fprintf('header: \n')
+  for key=keys(hdr_map)
+    fprintf('\t%s: %s\n', key{1}, hdr_map(key{1}));
+  end
+  fprintf('nseries: %i\n', nseries);
+  fprintf('npol: %i\n', npol);
+  fprintf('Nin/M: %i\n', Nin/M);
+  fprintf('L (number of output channels): %i\n', L);
+  fprintf('total datasize: %i\n', npol*2*(Nin/M)*nseries*L);
+  fprintf('ntype: %s\n', ntype);
+  fprintf('oversampling factor: %f, pfb_type: %i\n', Os, pfb_type);
+end
 
 for ii = 1 : nseries
 
@@ -278,12 +270,7 @@ for ii = 1 : nseries
         end;
     end;
 
-    %y2_plot(1:Nin/L) = y2(1,3,(1:Nin/L));
-    %subplot(211); plot((1:Nin/L),real(y2_plot(1:Nin/L))); box on; grid on;
-    %title('Output Real');
-    %subplot(212); plot((1:Nin/L),imag(y2_plot(1:Nin/L))); box on; grid on;
-    %title('Output Imag'); xlabel('time');
-    %pause
+
 
     % Interleave polarizations and real/imag
     % (selecting just the required output channel number)
@@ -294,25 +281,60 @@ for ii = 1 : nseries
     dat = reshape(transpose(z),2*npol*Nin/M,1);
 
     % write data to y_full_channel
-    y_full_channel(1,:,:,ii) = real(y2(1,:,(1:Nin/M)));
-    y_full_channel(2,:,:,ii) = imag(y2(1,:,(1:Nin/M)));
-    y_full_channel(3,:,:,ii) = real(y2(2,:,(1:Nin/M)));
-    y_full_channel(4,:,:,ii) = imag(y2(2,:,(1:Nin/M)));
+    s = (Nin/M)*(ii - 1) + 1;
+    e = (Nin/M)*ii;
+    y_full_channel(1,:,s:e) = real(y2(1,:,(1:Nin/M)));
+    y_full_channel(2,:,s:e) = imag(y2(1,:,(1:Nin/M)));
+    y_full_channel(3,:,s:e) = real(y2(2,:,(1:Nin/M)));
+    y_full_channel(4,:,s:e) = imag(y2(2,:,(1:Nin/M)));
+
+    t = (1:Nin/M);
+    fig = figure('visible', 'off');
+    for c=1:L
+      for p=1:npol
+        for z=1:2
+          z_name = 'Real';
+          if z == 2
+            z_name = 'Imag';
+          end
+
+          subplot_idx = z + (p-1)*2 + (c-1)*(npol*2);
+          idx = npol*(p - 1) + z;
+
+          y1_plot(1:Nin/M) = y_full_channel(idx,c,s:e);
+          subplot(L, npol*2, subplot_idx);
+          plot(t, y1_plot); box on; grid on;
+          title(sprintf('Output %s Pol %i Channel %i', z_name, p, c));
+          xlabel('time');
+          ax = gca;
+          set(ax,'FontSize', 5);
+        end
+      end
+    end
+    fig = gcf;
+    fig.PaperUnits = 'inches';
+    fig.PaperPosition = [0 0 16 9];
+    plt_name = sprintf('products/channelized_data_%03i', ii);
+    % print(sprintf('products/channelized_data_%i', ii),'-dpng', '-r150')
+    saveas(fig, plt_name, 'png');
+    % print(sprintf('products/channelized_data_%i', ii),'-dsvg'); %, '-r150')
+    % pause
+
     %Write vector to file
     fwrite(fid_out, dat, ntype);
 end;
 
-fwrite(fid_out_full, reshape(y_full_channel, npol*2*(Nin/M)*nseries*L, 1));
+
+fwrite(fid_out_full, reshape(y_full_channel, npol*2*L*(Nin/M)*nseries, 1), ntype);
 
 fclose(fid_in);
 fclose(fid_out);
-
+fclose(fid_out_full);
 
 return
 
 exit();
 end
-
 
 
 % First CS-PFB
@@ -621,7 +643,7 @@ end %Function OS_PFB_2
 
 % Function to pull observation parameters from a header file
 % Also adjusts the TSAMP value to account for Over-Sampling and writes a new header
-function headerMap = headerReadWrite(headerFile, fname_out, headerMap)
+function hdr_map = headerReadWrite(headerFile, fname_out, hdr_map)
 
 if exist(headerFile, 'file')
     fInputHeaderFile = fopen(headerFile, 'r');
@@ -636,7 +658,7 @@ if exist(headerFile, 'file')
 
         % Only consider meaningful lines
         if length(tempMap) > 1
-            headerMap(tempMap{1}) = tempMap{2};
+            hdr_map(tempMap{1}) = tempMap{2};
 
             % TSAMP must be rescaled before appending
             new_line = strcat(headerLines{i},'\n');
@@ -650,10 +672,10 @@ if exist(headerFile, 'file')
     end
     utcnow = datetime('now', 'TimeZone', 'UTC');
     utcnow = datestr(utcnow, 'yyyy-mm-dd-HH:MM:ss');
-    headerMap('UTC_START') = utcnow;
+    hdr_map('UTC_START') = utcnow;
     % Get TSAMP, NCHAN, OS_FACTOR as numbers
-    if isKey(headerMap,'TSAMP')
-        tsamp_val = str2num(headerMap('TSAMP'));
+    if isKey(hdr_map,'TSAMP')
+        tsamp_val = str2num(hdr_map('TSAMP'));
 
         % Defaults
         nchan_val = 8;
@@ -663,13 +685,13 @@ if exist(headerFile, 'file')
         De_val = 1;
 
         % Number of Channels
-        if isKey(headerMap,'NCHAN')
-            nchan_val = str2num(headerMap('NCHAN'));
+        if isKey(hdr_map,'NCHAN')
+            nchan_val = str2num(hdr_map('NCHAN'));
         end
 
         % Over-Sampling Factor
-        if isKey(headerMap,'OS_FACTOR')
-            splitInput = strsplit(headerMap('OS_FACTOR'),'/');
+        if isKey(hdr_map,'OS_FACTOR')
+            splitInput = strsplit(hdr_map('OS_FACTOR'),'/');
             Nu_val = str2num(splitInput{1});
             De_val = str2num(splitInput{2});
         end
