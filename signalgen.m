@@ -1,12 +1,12 @@
 function signalgen()
 % Generates a file containing dual noise vectors with phase-dependent
 % partial polarization. File is 32-bit floating point with polarizations
-% interleaved at each time step. 
- 
+% interleaved at each time step.
+
 % DATA SETTINGS
 %
 % fname     - Ouput filename
-% headerFile - A dada-style pulsar data header file 
+% headerFile - A dada-style pulsar data header file
 % hdrsize   - Header size
 % hdrtype   - Data type for header ('uint8' = byte)
 % ntype     - Data type for each element in a pair ('single' = float)
@@ -20,14 +20,14 @@ function signalgen()
 %             (don't shift if PFB is in the signal chain)
 %
 % INSTRUMENT SETTINGS
-% f0        - Centre frequency (MHz) 
+% f0        - Centre frequency (MHz)
 % f_sample_out - Sampling frequency of output data (MHz)
-% 
+%
 % PULSAR SETTINGS
 % Dconst    - Dispersion constant, s.MHz^2/(pc/cm^3)
 % DM        - Dispersion measure, pc/cm^3
 % pcal      - Pulsar period (s) and other params in a structure
-% t0        - Absolute time (in seconds) of first time element 
+% t0        - Absolute time (in seconds) of first time element
 %
 % OUTPUTS:
 % --------
@@ -38,8 +38,8 @@ function signalgen()
 % ------------
 % Generates a file containing dual noise vectors with phase-dependent
 % partial polarization. File is 32-bit floating point with polarizations
-% interleaved at each time step. 
-% 
+% interleaved at each time step.
+%
 % Changes:
 % --------
 %
@@ -50,17 +50,17 @@ function signalgen()
 %                               Added optional fftshift before inverse FFT
 % R. Willcox       07-Sep-2018  Added header read-in
 % ----------------------------------------------------------------------
- 
+
 %=============
- 
-fname = 'simulated_pulsar.dump';
-headerFile = 'gen.header'; %Use a better name
+
+fname = 'data/simulated_pulsar.dump';
+headerFile = 'config/gen.header'; %Use a better name
 
 %=============
 % Default settings for variables that might be found in a header file
 
-hdrsize = 4096; % Header size 
-npol = 2; % Number of polarizations (should always be 2 when calc Stokes) 
+hdrsize = 4096; % Header size
+npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
 f0 = 1405; % Centre frequency (MHz)
 T_pulsar = .00575745; % Pulsar period
 
@@ -74,28 +74,28 @@ dformat = 'complextoreal'; %specifies conversion TO real or complex data
 %=============
 % Header settings for variables, where they exist
 %
-% Get data from header 
+% Get data from header
 headerMap = containers.Map; %empty map
-headerMap = headerReadIn(headerFile, headerMap); 
+headerMap = headerReadIn(headerFile, headerMap);
 
-% Header size 
-if isKey(headerMap,'HDR_SIZE') hdrsize = str2num(headerMap('HDR_SIZE')); end 
-% Number of polarizations 
+% Header size
+if isKey(headerMap,'HDR_SIZE') hdrsize = str2num(headerMap('HDR_SIZE')); end
+% Number of polarizations
 if isKey(headerMap,'NPOL') npol = str2num(headerMap('NPOL')); end
 % Centre frequency (MHz)
 if isKey(headerMap,'FREQ') f0 = str2num(headerMap('FREQ')); end
 % Pulsar period
-if isKey(headerMap, 'CALFREQ') T_pulsar = 1.0/str2num(headerMap('CALFREQ')); end 
+if isKey(headerMap, 'CALFREQ') T_pulsar = 1.0/str2num(headerMap('CALFREQ')); end
 
-% Set bandwidth 
+% Set bandwidth
 if isKey(headerMap,'BW') f_sample_out = (-1)*str2num(headerMap('BW')); end % Sampling frequency of output (MHz)
 
 % Multiplying factor going from input to output type
 %
 % NDIM is 1 for real output data and 2 for complex output data
-if isKey(headerMap,'NDIM') 
+if isKey(headerMap,'NDIM')
     if str2num(headerMap('NDIM'))==1 dformat='complextoreal';
-    elseif str2num(headerMap('NDIM'))==2 dformat='complextocomplex'; 
+    elseif str2num(headerMap('NDIM'))==2 dformat='complextocomplex';
     else warning('NDIM in header file should be 1 or 2.')
     end
 end
@@ -112,11 +112,11 @@ nseries = 30; % Number of FFT's to perform
 noise = 0.5;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
 shift = 0; % performs an fftshift before the inverse FFT
 switch dformat
-    case 'complextoreal' 
-        Nmul = 2; 
-    case 'complextocomplex' 
+    case 'complextoreal'
+        Nmul = 2;
+    case 'complextocomplex'
         Nmul = 1;
-    otherwise 
+    otherwise
         warning('Conversion should be complextoreal or complextocomplex.')
 end
 
@@ -125,28 +125,28 @@ Dconst = 4.148804E3; % s.MHz^2/(pc/cm^3)
 DM = 2.64476; % pc/cm^3
 %DM = 2.64476*40; % pc/cm^3
 pcal = struct('a',T_pulsar,'b',0.0);% Pulsar period (s) and other params
-t0 = 0.0; % Absolute time (in seconds) of first time element 
- 
+t0 = 0.0; % Absolute time (in seconds) of first time element
+
 Tout = 1/abs(f_sample_out)*1E-6; % Sample spacing of output (seconds)
 df = f_sample_out/Nmul; % Bandwidth/Nyquist frequency (MHz)
 Tin = Tout*Nmul; % Time spacing between input data elements
 Nin = Nout/Nmul; % Number of data elements in input time series
 Pmul = 1/Nmul; % Power multiplication factor for all but the DC channel
- 
+
 %===============
 % Create the dispersion kernel and determine the number of elements to be
 % clipped off the beginning and end.
 frange = [-df/2, df/2] + f0;
- 
+
 % Get matrix to perform dispersion on complex array
 [H, ~, n_hi, n_lo] = ...
          dispnmatrix(frange, abs(df), Nin, 1, Dconst*DM, Tin, sign(df));
- 
+
 % Calculate the number of elements in the clipped input array
-nclip_in = Nin - n_lo - n_hi; 
+nclip_in = Nin - n_lo - n_hi;
 % Calculate number of elements in the clipped output array
-nclip_out = Nout - n_lo*Nmul - n_hi*Nmul; 
- 
+nclip_out = Nout - n_lo*Nmul - n_hi*Nmul;
+
 frac_lost = (n_lo + n_hi)/Nin; % fraction of array that's lost
 fprintf('Lost fraction of time series = %f\n', frac_lost);
 fprintf('Time series length = %f s\n', nclip_in*Tin);
@@ -156,10 +156,10 @@ fprintf('Time series length = %f s\n', nclip_in*Tin);
 % Calculate phase-dependent Stokes parameters and coherency matrix
 % using the rotating vector model
 [~, J] = rotvecmod(nbins,noise);
- 
+
 % Vector of relative times
 trel = (0:Nin-1)*Tin;
- 
+
 %===============
 % Open file for writing
 fid = fopen(fname, 'w');
@@ -169,55 +169,55 @@ fid = fopen(fname, 'w');
 for ii = 1:nseries,
     % Print loop number
     fprintf('Loop # %i of %i\n', ii, nseries)
-    
+
     % Time vector
     if ii == 1,
         tt = t0 - n_hi*Tin + trel;
     else
         tt = ttclip(end) - (n_hi-1)*Tin + trel;
     end;
-    
-    tindex = findphase(tt, nbins, pcal); 
+
+    tindex = findphase(tt, nbins, pcal);
     index = unique(tindex);
-    
+
     % Initialize data vector for this series
     z = zeros(Nin, npol, 'single');
     %iL = 1; %Starting index when looping through phases
-    
-    % Loop through groups of data that share the same phase. Random data 
+
+    % Loop through groups of data that share the same phase. Random data
     % in each group are generated from the same coherency matrix
-    
+
     for jj = 1:length(index),
         %Get coherency matrix for this pulsar phase
         Jcoh = [J(index(jj),1), J(index(jj),3); ...
                 J(index(jj),2), J(index(jj),4)];
-        
+
         % Indices of elements with a given phase
         iphase = find(tindex == index(jj));
         nL = length(iphase);
-        
-        %Generate two randomly-phased, unit-length phasors  
+
+        %Generate two randomly-phased, unit-length phasors
         %z0 = exp(complex(0,1)*2*pi()*rand(nL,npol));
         z0 = sqrt(0.5)*[complex(randn(nL,1),randn(nL,1)), ...
                         complex(randn(nL,1),randn(nL,1))];
- 
+
         %Generate covariant vectors via Cholesky decomposition
         zjj = z0*chol(Jcoh, 'upper');
         %z = transpose(chol(Jcoh, 'lower')*transpose(z0)); %alternative
-        
+
         % Concatenate with data from other phases
         z(iphase, :) = zjj;
         %iL = iL + nL; % increment to next starting index in z
     end;
-    
+
     % Forward FFT
     f1a = fft(z(:,1), Nin);
     f2a = fft(z(:,2), Nin);
-    
+
     % Element-wise multiplication by dispersion matrix.
     f1a = f1a .* H;
     f2a = f2a .* H;
-    
+
     % If complextoreal, then create a Hermitian array
     switch dformat
         case 'complextoreal'
@@ -225,12 +225,12 @@ for ii = 1:nseries,
             f1 = [real(f1a(1)); f1a(2:Nin)*Pmul; ...
                   imag(f1a(1)); flipud(conj(f1a(2:Nin)))*Pmul];
             f2 = [real(f2a(1)); f2a(2:Nin)*Pmul; ...
-                  imag(f2a(1)); flipud(conj(f2a(2:Nin)))*Pmul]; 
+                  imag(f2a(1)); flipud(conj(f2a(2:Nin)))*Pmul];
         otherwise
             f1 = f1a;
             f2 = f2a;
     end;
-    
+
     % Inverse FFT
     % Optionally include an fftshift before the inverse FFT, as needed
     if shift == 1,
@@ -239,110 +239,110 @@ for ii = 1:nseries,
     end;
     z1 = ifft(f1, Nout);
     z2 = ifft(f2, Nout);
-    
+
     % Remove convolution overlap region
     ttclip = tt(1+n_hi : Nin-n_lo);
     z1clip = z1(1+n_hi*Nmul : Nout-n_lo*Nmul);
     z2clip = z2(1+n_hi*Nmul : Nout-n_lo*Nmul);
- 
+
     % Interleave polarizations into a single vector
     switch dformat
-        case 'complextoreal'    
+        case 'complextoreal'
             z = [z1clip, z2clip];
             dat = reshape(transpose(z),npol*nclip_out,1);
         case 'complextocomplex'
             z = [real(z1clip), imag(z1clip), real(z2clip), imag(z2clip)];
             dat = reshape(transpose(z),2*npol*nclip_out,1);
     end
-    
+
     %Write vector to file
     fwrite(fid, dat, ntype);
 end;
- 
+
 fclose(fid);
 return
 
-exit(); 
+exit();
 end
 
 
 
 function [S, J, p] = rotvecmod(N, noise, showplot)
 % Rotating vector model for pulsar emission
- 
+
 if ~exist('N','var'),
     N = 1024;
 end;
- 
+
 esig = 5. ; % emission half angle (polar angle, degrees)
 epeak = 0. ; % emission peak angle (polar angle, degrees)
 flin = 0.3; % linear polarized fraction amplitude
 %flin = 1; % linear polarized fraction amplitude % Reinhold test
- 
+
 zeta = 30.; % observing angle (degrees) relative to rotation axis
 alpha = 40.; % magnetic axis (degrees) relative to rotation axis
- 
+
 pmin = -180.;
 pmax = 180.;
- 
-% Angle of rotation: p=0 for aligned dipole. 
+
+% Angle of rotation: p=0 for aligned dipole.
 % This is equivalent to pulsar longitude or phase
-p = transpose(linspace(pmin, pmax, N)); 
- 
+p = transpose(linspace(pmin, pmax, N));
+
 % Polarization angle w.r.t projected rotation axis from observing direction
 %psi = atand(sind(alpha)*sind(p)./(sind(zeta)*cosd(alpha) - ...
 %    sind(alpha)*cosd(zeta)*cosd(p)));
 psi = atan2d(sind(alpha)*sind(p),  ...
     (sind(zeta)*cosd(alpha) - sind(alpha)*cosd(zeta)*cosd(p)));
- 
+
 % Polar observation angle in magnetic axis reference frame
 cosO = cosd(p)*sind(zeta)*sind(alpha) + cosd(alpha)*cosd(zeta);
 tanO = sqrt(1./(cosO.^2)-1);
- 
+
 % Polar emission angle in magnetic axis reference frame
 thetaE = atand(1.5*(sqrt(1+(8/9)*tanO.^2) - 1)./tanO);
 %thetaE = atand(1.5*(-sqrt(1+(8/9)*tanO.^2) - 1)./tanO);
- 
+
 % Intensity (model-based assumption)
 S0 = (1./sqrt(2*pi()*esig^2))*exp(-(thetaE-epeak).^2/(2.*esig^2));
 S0 = S0/max(S0); %normalize max to 1
- 
+
 % Linear polarization fraction (model-based assumption)
 L = flin*S0.*cosd(thetaE);
- 
+
 % Other Stokes parameters
 S1 = L.*cosd(2*psi);
 S2 = L.*sind(2*psi);
 S3 = -(1-flin)*S1; % Fake circular polarization to avoid zero signal
 %S3 = single(zeros(N,1)); % Zero circular polarization component
- 
+
 % Add noise, typically such that max(S/N) = 1
 S0 = S0 + noise;
- 
-% Normalize Stokes 4-vector so that S0 = 1. 
+
+% Normalize Stokes 4-vector so that S0 = 1.
 factor = max(S0);
 S0 = S0/factor;
 S1 = S1/factor;
 S2 = S2/factor;
 S3 = S3/factor;
- 
+
 % Create Coherency matrix
 Jxx = 0.5*(S0 + S1);
 Jyy = 0.5*(S0 - S1);
 Jxy = 0.5*(S2 + 1i*S3);
 Jyx = 0.5*(S2 - 1i*S3);
- 
+
 % Plot results, if requested. Useful for debugging.
 if exist('showplot','var'),
     clf();
- 
+
     subplot(2,2,1);
-    plot(p, transpose([S0, S1, S2, S3])); 
+    plot(p, transpose([S0, S1, S2, S3]));
     legend('S0', 'S1', 'S2', 'S3');
     xlabel('Longitude (degrees)','FontSize', 12, 'FontWeight', 'bold');
     ylabel('Amplitude','FontSize', 12, 'FontWeight', 'bold');
     set(gca,'FontSize', 12, 'FontWeight', 'bold');
- 
+
     subplot(2,2,3);
     plot(S0, transpose([S1, S2]));
     hleg1 = legend('S1', 'S2');
@@ -351,21 +351,21 @@ if exist('showplot','var'),
     xlabel('S0','FontSize', 12, 'FontWeight', 'bold');
     ylabel('S1 or S2','FontSize', 12, 'FontWeight', 'bold');
     set(gca,'FontSize', 12, 'FontWeight', 'bold');
- 
+
     subplot(2,2,2);
     plot(p, transpose([Jxx, Jyy, real(Jxy), imag(Jxy)]));
     legend('Jxx', 'Jyy', 'Real(Jxy)', 'Imag(Jxy)');
     xlabel('Longitude (degrees)','FontSize', 12, 'FontWeight', 'bold');
     ylabel('Amplitude','FontSize', 12, 'FontWeight', 'bold');
     set(gca,'FontSize', 12, 'FontWeight', 'bold');
- 
+
     subplot(2,2,4);
     plot(S1, S2, 'b');
     xlabel('S1','FontSize', 12, 'FontWeight', 'bold');
     ylabel('S2','FontSize', 12, 'FontWeight', 'bold');
     set(gca,'FontSize', 12, 'FontWeight', 'bold');
 end;
- 
+
 S = [S0, S1, S2, S3];
 J = [Jxx, Jyx, Jxy, Jyy];
 return
@@ -375,8 +375,8 @@ end
 % Function to pull observation parameters from a header file
 function headerMap = headerReadIn(headerFile, headerMap)
 % This reads a header file typical of pulsar observations
-% (dada, cspsr2, etc.) and parses the parameters found there.  
-% When the .dump file is prepared, the header and .dump 
+% (dada, cspsr2, etc.) and parses the parameters found there.
+% When the .dump file is prepared, the header and .dump
 % files should be catted together with a buffer of nulls to
 % fill up the the header, before being read into DSPSR
 
@@ -386,7 +386,7 @@ if exist(headerFile, 'file')
     formatSpec = '%c'; %collects all chars
     headerString = fscanf(fheaderFile, formatSpec);
     headerLines = strsplit(headerString, '\n'); % output is a row vector where each element is a line from the header file
-    
+
     for i=1:length(headerLines)
        tempMap = strsplit(headerLines{i}); % Parse lines along whitespace
        if length(tempMap) > 1

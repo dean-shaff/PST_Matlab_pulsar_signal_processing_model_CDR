@@ -47,7 +47,6 @@ function PFBchannelizer()
 %                               Added Header read and write
 %
 % ----------------------------------------------------------------------
-
 close all; clear all; clc;
 
 % Input file name
@@ -56,15 +55,20 @@ fname_in = 'data/simulated_pulsar.dump';
 % Output file name
 %fname_out = 'cs_channelized_pulsar.dump';
 fname_out = 'data/os_channelized_pulsar.dump';
+fname_out_full = 'data/full_channelized_pulsar.dump';
+
+fnames_out = {fname_out, fname_out_full};
 
 % Clear out the output file
     % Various pieces append at different points,
     % so this ensures that the file starts clean every time
-fid_out = fopen(fname_out, 'w');
-fclose(fid_out);
+for fname=fnames_out
+  fid = fopen(fname{1}, 'w');
+  fclose(fid);
+end
 
 % Header name
-headerFile = 'config/gen.header';
+headerFileName = 'config/gen.header';
 
 
 %=======================================
@@ -83,7 +87,7 @@ npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
 f_sample_in = 80; % Sampling frequency of input (MHz)
 
 % Multiplying factor going from input to output type
-dformat = 'complextoreal'; %specifies conversion TO real or complex data
+dformat = 'realtocomplex';
 %dformat = 'complextocomplex'; %specifies conversion TO real or complex data
 
 % PFB type
@@ -96,9 +100,20 @@ De = 7; %Denominator
 %=============
 % Header settings for variables, where they exist
 %
+headerMap = read_header(headerFileName, containers.Map());
+for key=keys(headerMap)
+  fprintf('%s, %s\n', key{1}, headerMap(key{1}));
+end
+
+
+return;
+
 % Get data from header
 headerMap = containers.Map; %empty map
-headerMap = headerReadWrite(headerFile, fname_out, headerMap);
+for fname=fnames_out
+  headerMap = headerReadWrite(headerFileName, fname{1}, headerMap);
+end
+% headerMap = headerReadWrite(headerFile, fname_out, headerMap);
 
 % Header size
 if isKey(headerMap,'HDR_SIZE') hdrsize = str2num(headerMap('HDR_SIZE')); end
@@ -134,8 +149,8 @@ end
 % Other parameters
 hdrtype = 'uint8'; % Data type for header ('uint8' = byte)
 ntype = 'single'; % Data type for each element in a pair ('single' = float)
-chan_no = 3; % Particular PFB output channel number to store to file
-nseries = 80; % Number of input blocks to read and process
+chan_no = 3; % Particular PFB output channel number to store to fill
+nseries = 2; % Number of input blocks to read and process
 
 %=============
 % Initialisations
@@ -174,16 +189,19 @@ end
 % Fill up the header completely by appending null characters, \0
 
 % Get current size of output file (just the header so far)
-hdrfile=dir(fname_out);
-hdr_currentsize=hdrfile.bytes;
+for fname=fnames_out
 
-% Append the remainder as nulls
-fid_out = fopen(fname_out, 'a');
-for i=1:(hdrsize-hdr_currentsize)
-    fprintf(fid_out,'\0');
+  hdrfile=dir(fname{1});
+  hdr_currentsize=hdrfile.bytes;
+
+  % Append the remainder as nulls
+  fid_out = fopen(fname{1}, 'a');
+  % fid_out_full = fopen(fname_out_full, 'a');
+  for i=1:(hdrsize-hdr_currentsize)
+      fprintf(fid_out,'\0');
+  end
+  fclose(fid_out);
 end
-fclose(fid_out);
-
 %==============
 % Prepare for main loop
 
@@ -193,9 +211,16 @@ fid_in = fopen(fname_in);
 % Open output file
 fid_out = fopen(fname_out, 'a');
 
+% Open output file for full channelization
+fid_out_full = fopen(fname_out_full, 'a');
+
 % Initialise output
 y2 = zeros(npol,L,Nin/M);
 
+% Initial full channelized output,
+% for ordering in TFP (Time Frequency Polarization)
+% This ordering is required in order to be read by dspsr
+y_full_channel = zeros(npol*2, L, Nin/M, nseries);
 
 %===============
 % Main loop
@@ -268,9 +293,16 @@ for ii = 1 : nseries
          real(transpose(z2_y2)), imag(transpose(z2_y2))];
     dat = reshape(transpose(z),2*npol*Nin/M,1);
 
+    % write data to y_full_channel
+    y_full_channel(1,:,:,ii) = real(y2(1,:,(1:Nin/M)));
+    y_full_channel(2,:,:,ii) = imag(y2(1,:,(1:Nin/M)));
+    y_full_channel(3,:,:,ii) = real(y2(2,:,(1:Nin/M)));
+    y_full_channel(4,:,:,ii) = imag(y2(2,:,(1:Nin/M)));
     %Write vector to file
     fwrite(fid_out, dat, ntype);
 end;
+
+fwrite(fid_out_full, reshape(y_full_channel, npol*2*(Nin/M)*nseries*L, 1));
 
 fclose(fid_in);
 fclose(fid_out);
@@ -616,7 +648,9 @@ if exist(headerFile, 'file')
             end
         end
     end
-
+    utcnow = datetime('now', 'TimeZone', 'UTC');
+    utcnow = datestr(utcnow, 'yyyy-mm-dd-HH:MM:ss');
+    headerMap('UTC_START') = utcnow;
     % Get TSAMP, NCHAN, OS_FACTOR as numbers
     if isKey(headerMap,'TSAMP')
         tsamp_val = str2num(headerMap('TSAMP'));
