@@ -31,7 +31,7 @@ function PFBchannelizer()
 % M         - PFB commutator length
 % L_M       - PFB overlap length
 % chan_no   - selected output channel number to store
-% 
+%
 % OUTPUTS:
 % --------
 %
@@ -47,24 +47,24 @@ function PFBchannelizer()
 %                               Added Header read and write
 %
 % ----------------------------------------------------------------------
- 
+
 close all; clear all; clc;
 
 % Input file name
-fname_in = 'simulated_pulsar.dump';
+fname_in = 'data/simulated_pulsar.dump';
 
 % Output file name
 %fname_out = 'cs_channelized_pulsar.dump';
-fname_out = 'os_channelized_pulsar.dump';
+fname_out = 'data/os_channelized_pulsar.dump';
 
 % Clear out the output file
-    % Various pieces append at different points, 
+    % Various pieces append at different points,
     % so this ensures that the file starts clean every time
 fid_out = fopen(fname_out, 'w');
-fclose(fid_out); 
+fclose(fid_out);
 
 % Header name
-headerFile = 'gen.header'; 
+headerFile = 'config/gen.header';
 
 
 %=======================================
@@ -76,8 +76,8 @@ global L; global Nu; global M; global L_M; global fname_pfb;
 %=============
 % Default settings for variables that might be found in a header file
 
-hdrsize = 4096; % Header size 
-npol = 2; % Number of polarizations (should always be 2 when calc Stokes) 
+hdrsize = 4096; % Header size
+npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
 
 % Set bandwidth - default is 8 x 10 MHz, for testing with 8-channel channelizer
 f_sample_in = 80; % Sampling frequency of input (MHz)
@@ -96,16 +96,16 @@ De = 7; %Denominator
 %=============
 % Header settings for variables, where they exist
 %
-% Get data from header 
+% Get data from header
 headerMap = containers.Map; %empty map
-headerMap = headerReadWrite(headerFile, fname_out, headerMap); 
+headerMap = headerReadWrite(headerFile, fname_out, headerMap);
 
-% Header size 
+% Header size
 if isKey(headerMap,'HDR_SIZE') hdrsize = str2num(headerMap('HDR_SIZE')); end
-% Number of polarizations 
+% Number of polarizations
 if isKey(headerMap,'NPOL') npol = str2num(headerMap('NPOL')); end
 
-% Set bandwidth 
+% Set bandwidth
 if isKey(headerMap,'BW') f_sample_in = (-1)*str2num(headerMap('BW')); end % Samplin    g frequency of input (MHz)
 
 % Multiplying factor going from output to input type
@@ -127,7 +127,7 @@ if isKey(headerMap,'OS_FACTOR')
         pfb_type=0; %for CSing
     else
         pfb_type=1; %for OSing
-    end   
+    end
 end
 
 %=======================================
@@ -144,10 +144,10 @@ nseries = 80; % Number of input blocks to read and process
 if pfb_type == 0, % Critically sampled
     Os = 1;
     %fname_pfb = 'CS_Prototype_FIR_8.mat';
-    fname_pfb = 'OS_Prototype_FIR_8.mat'; % Where is CS_Prototype_FIR.mat?
+    fname_pfb = 'config/OS_Prototype_FIR_8.mat'; % Where is CS_Prototype_FIR.mat?
 else % Over sampled
     Os = Nu/De; % Oversampling factor
-    fname_pfb = 'OS_Prototype_FIR_8.mat';
+    fname_pfb = 'config/OS_Prototype_FIR_8.mat';
 end;
 
 % Number of channels in filter-bank
@@ -159,16 +159,16 @@ Nin = M*(2^14);  % Number of elements per input file read
 
 % Set up parameters depending on whether incoming data is real or complex
 switch dformat
-    case 'realtocomplex' 
+    case 'realtocomplex'
         Nmul = 2; % Multiplying factor in converting from real to complex
         NperNin = 1; % 1 data point per polariz per incoming time step
     case 'complextocomplex'
         Nmul = 1;
-        NperNin = 2; % 1 real + 1 imag point per pol per incoming time step 
+        NperNin = 2; % 1 real + 1 imag point per pol per incoming time step
     otherwise
         warning('Conversion should be realtocomplex or complextocomplex.');
 end
-  
+
 
 %==============
 % Fill up the header completely by appending null characters, \0
@@ -202,17 +202,17 @@ y2 = zeros(npol,L,Nin/M);
 % Read input blocks and filter
 
 for ii = 1 : nseries
-    
+
     % Print loop number
     fprintf('Loop # %i of %i\n', ii, nseries);
-    
+
     % Read stream of voltages into a single column
     Vstream = single(fread(fid_in, npol*Nin*NperNin, ntype));
-    
+
     if feof(fid_in)
         error('Error - hit end of input file!');
     end;
-    
+
     %====================
     % Parse real and imag components if incoming data is complex
     switch dformat
@@ -220,17 +220,17 @@ for ii = 1 : nseries
             Vstream = reshape(Vstream, 2, []);
             Vstream = complex(Vstream(1,:), Vstream(2,:));
     end;
-    
+
     % Separate data into different polarisations: Vdat(1,:) and Vdat(2,:)
     Vdat = reshape(Vstream, npol, []);
 
     %figure;
     %subplot(221); plot((1:Nout),real(Vdat(1,1:Nout))); box on; grid on;
-    %title('v1 Real'); 
+    %title('v1 Real');
     %subplot(223); plot((1:Nout),imag(Vdat(1,1:Nout))); box on; grid on;
     %title('v1 Imag'); xlabel('time');
     %subplot(222); plot((1:Nout),real(Vdat(2,1:Nout))); box on; grid on;
-    %title('v2 Real'); 
+    %title('v2 Real');
     %subplot(224); plot((1:Nout),imag(Vdat(2,1:Nout))); box on; grid on;
     %title('v2 Imag'); xlabel('time');
     %pause
@@ -255,11 +255,11 @@ for ii = 1 : nseries
 
     %y2_plot(1:Nin/L) = y2(1,3,(1:Nin/L));
     %subplot(211); plot((1:Nin/L),real(y2_plot(1:Nin/L))); box on; grid on;
-    %title('Output Real'); 
+    %title('Output Real');
     %subplot(212); plot((1:Nin/L),imag(y2_plot(1:Nin/L))); box on; grid on;
-    %title('Output Imag'); xlabel('time'); 
+    %title('Output Imag'); xlabel('time');
     %pause
-    
+
     % Interleave polarizations and real/imag
     % (selecting just the required output channel number)
     z1_y2(1:Nin/M) = y2(1,chan_no,(1:Nin/M));
@@ -267,15 +267,15 @@ for ii = 1 : nseries
     z = [real(transpose(z1_y2)), imag(transpose(z1_y2)),...
          real(transpose(z2_y2)), imag(transpose(z2_y2))];
     dat = reshape(transpose(z),2*npol*Nin/M,1);
-    
+
     %Write vector to file
     fwrite(fid_out, dat, ntype);
 end;
 
 fclose(fid_in);
 fclose(fid_out);
-  
- 
+
+
 return
 
 exit();
@@ -289,45 +289,45 @@ end
 function y = CS_PFB_1(x)
 
 global L; global fname_pfb;
- 
+
 %Declaration and Initialization of Input Mask
 %As Persistence Variables
 persistent n h xM;
 if isempty(n)
-          
+
     %Loading the Prototype Filter as an initiation task
-    %This Will NOT repeat in subsequent runs    
+    %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
     h = FiltCoefStruct.h;
-    
+
     %Initiate the Input Mask that is multiplied with the Filter mask
     xM = zeros(1,length(h));
     %Initiate the Output mask
     yP = zeros(L,1);
-    
+
     %Control Index - Initiation
     n = 0;
-    
+
 end; %End if
- 
+
 %Multiplying the Indexed Input Mask and Filter Mask elements and
 %accumulating
 for k = 1 : L
     yP(k,1) = sum(xM(k:L:end).*h(k:L:end));
 end; % For k
- 
+
 %The Linear Shift of Input through the FIFO
-%Shift the Current Samples by M to the Right 
+%Shift the Current Samples by M to the Right
 xM(1,L+1:end) = xM(1,1:end-L);
 %Assign the New Input Samples for the first M samples
 xM(1,1:L) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
-                      % to the front 
- 
+                      % to the front
+
 %transpose(yP((1:L),1))
 
 % %Evaluating the Cross-Stream (i.e. column wise) IDFT
 % yfft = L*L*(ifft(yP));%
-% 
+%
 % %Note the Input Signal is Real-Valued. Hence, only half of the output
 % %Channels are Independent. The Packing Method is used here. However,
 % %any Optimized Real IFFT Evaluation Algorithm Can be used in its place
@@ -345,10 +345,10 @@ y(1:L/2) = (0.5*((IFY2C+conj(circshift(flipud(IFY2C),[+1,0])))...
 y(L/2+1) = 0.5*((IFY2C(1)+conj(IFY2C(1)) + 1j*(IFY2C(1)-conj(IFY2C(1)))));
 
 y(L/2+2:L) = conj(fliplr(y(2:L/2)));
- 
+
 %Changing the Control Index
 n = n+1;
- 
+
 end %Function CS_PFB_1
 
 
@@ -359,45 +359,45 @@ end %Function CS_PFB_1
 function y = CS_PFB_2(x)
 
 global L; global fname_pfb;
- 
+
 %Declaration and Initialization of Input Mask
 %As Persistence Variables
 persistent n h xM;
 if isempty(n)
-          
+
     %Loading the Prototype Filter as an initiation task
-    %This Will NOT repeat in subsequent runs    
+    %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
     h = FiltCoefStruct.h;
-    
+
     %Initiate the Input Mask that is multiplied with the Filter mask
     xM = zeros(1,length(h));
     %Initiate the Output mask
     yP = zeros(L,1);
-    
+
     %Control Index - Initiation
     n = 0;
-    
+
 end; %End if
- 
+
 %Multiplying the Indexed Input Mask and Filter Mask elements and
 %accumulating
 for k = 1 : L
     yP(k,1) = sum(xM(k:L:end).*h(k:L:end));
 end; % For k
- 
+
 %The Linear Shift of Input through the FIFO
-%Shift the Current Samples by M to the Right 
+%Shift the Current Samples by M to the Right
 xM(1,L+1:end) = xM(1,1:end-L);
 %Assign the New Input Samples for the first M samples
 xM(1,1:L) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
-                      % to the front 
- 
+                      % to the front
+
 %transpose(yP((1:L),1))
 
 % %Evaluating the Cross-Stream (i.e. column wise) IDFT
 % yfft = L*L*(ifft(yP));%
-% 
+%
 % %Note the Input Signal is Real-Valued. Hence, only half of the output
 % %Channels are Independent. The Packing Method is used here. However,
 % %any Optimized Real IFFT Evaluation Algorithm Can be used in its place
@@ -415,10 +415,10 @@ y(1:L/2) = (0.5*((IFY2C+conj(circshift(flipud(IFY2C),[+1,0])))...
 y(L/2+1) = 0.5*((IFY2C(1)+conj(IFY2C(1)) + 1j*(IFY2C(1)-conj(IFY2C(1)))));
 
 y(L/2+2:L) = conj(fliplr(y(2:L/2)));
- 
+
 %Changing the Control Index
 n = n+1;
- 
+
 end %Function CS_PFB_2
 
 
@@ -428,42 +428,42 @@ end %Function CS_PFB_2
 % Oversampled Polyphase Filter-Bank Channelizer function, based on code by
 % Thushara Kanchana Gunaratne, RO/RCO, NSI-NRC, Canada, 2015-03-05
 function y = OS_PFB_1(x)
- 
+
 global L; global Nu; global M; global L_M; global fname_pfb;
 
 %Declaration and Initialization of Input Mask
 %As Persistance Variables
 persistent n h xM;
 if isempty(n)
-      
+
     %Loading the Prototype Filter as an initiation task
-    %This Will NOT repeat in subsequent runs    
+    %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
     h = FiltCoefStruct.h;
-    
+
     %Initiate the Input Mask that is multiplied with the Filter mask
     xM = zeros(1,length(h));
     %Initiate the Output mask
     yP = zeros(L,1);
-    
+
     %Control Index - Initiation
     n = 0;
-    
+
 end; %End if
- 
+
 %Multiplying the Indexed Input Mask and Filter Mask elements and
 %accumulating
 for k = 1 : L
     yP(k,1) = sum(xM(k:L:end).*h(k:L:end));
 end; % For k
- 
+
 %The Linear Shift of Input through the FIFO
-%Shift the Current Samples by M to the Right 
+%Shift the Current Samples by M to the Right
 xM(1,M+1:end) = xM(1,1:end-M);
 %Assign the New Input Samples for the first M samples
 xM(1,1:M) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
-                      % to the front 
- 
+                      % to the front
+
 %Performing the Circular Shift to Compensate the Shift in Band Center
 %Frequencies
 if n == 0
@@ -471,15 +471,15 @@ if n == 0
 else
     y1S = [yP((Nu-n)*L_M+1:end); yP(1:(Nu-n)*L_M)];
 end;
- 
+
 % %Evaluating the Cross-Stream (i.e. column wise) IDFT
 % yfft = L*L*(ifft(yP));%
-% 
+%
 % %Modulating the Channels (i.e. FFT Outputs) to compensate the shift in the
 % %center frequency
 % %y = yfft.*exp(2j*pi*(1-M/L)*n*(0:1:L-1).');
 % y = yfft.*exp(-2j*pi*M/L*n*(0:1:L-1).');
- 
+
 % %Note the Input Signal is Real-Valued. Hence, only half of the output
 % %Channels are Independent. The Packing Method is used here. However,
 % %any Optimized Real IFFT Evaluation Algorithm Can be used in its place
@@ -497,11 +497,11 @@ y(1:L/2) = (0.5*((IFY2C+conj(circshift(flipud(IFY2C),[+1,0])))...
 y(L/2+1) = 0.5*((IFY2C(1)+conj(IFY2C(1)) + 1j*(IFY2C(1)-conj(IFY2C(1)))));
 
 y(L/2+2:L) = conj(fliplr(y(2:L/2)));
- 
+
 %Changing the Control Index
 n = n+1;
 n = mod(n,Nu);
- 
+
 end %Function OS_PFB_1
 
 
@@ -512,40 +512,40 @@ end %Function OS_PFB_1
 function y = OS_PFB_2(x)
 
 global L; global Nu; global M; global L_M; global fname_pfb;
- 
+
 %Declaration and Initialization of Input Mask
 %As Persistance Variables
 persistent n h xM;
 if isempty(n)
-      
+
     %Loading the Prototype Filter as an initiation task
-    %This Will NOT repeat in subsequent runs    
+    %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
     h = FiltCoefStruct.h;
-    
+
     %Initiate the Input Mask that is multiplied with the Filter mask
     xM = zeros(1,length(h));
     %Initiate the Output mask
     yP = zeros(L,1);
-    
+
     %Control Index - Initiation
     n = 0;
-    
+
 end; %End if
- 
+
 %Multiplying the Indexed Input Mask and Filter Mask elements and
 %accumulating
 for k = 1 : L
     yP(k,1) = sum(xM(k:L:end).*h(k:L:end));
 end; % For k
- 
+
 %The Linear Shift of Input through the FIFO
-%Shift the Current Samples by M to the Right 
+%Shift the Current Samples by M to the Right
 xM(1,M+1:end) = xM(1,1:end-M);
 %Assign the New Input Samples for the first M samples
 xM(1,1:M) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
-                      % to the front 
- 
+                      % to the front
+
 %Performing the Circular Shift to Compensate the Shift in Band Center
 %Frequencies
 if n == 0
@@ -553,15 +553,15 @@ if n == 0
 else
     y1S = [yP((Nu-n)*L_M+1:end); yP(1:(Nu-n)*L_M)];
 end;
- 
+
 % %Evaluating the Cross-Stream (i.e. column wise) IDFT
 % yfft = L*L*(ifft(yP));%
-% 
+%
 % %Modulating the Channels (i.e. FFT Outputs) to compensate the shift in the
 % %center frequency
 % %y = yfft.*exp(2j*pi*(1-M/L)*n*(0:1:L-1).');
 % y = yfft.*exp(-2j*pi*M/L*n*(0:1:L-1).');
- 
+
 % %Note the Input Signal is Real-Valued. Hence, only half of the output
 % %Channels are Independent. The Packing Method is used here. However,
 % %any Optimized Real IFFT Evaluation Algorithm Can be used in its place
@@ -579,11 +579,11 @@ y(1:L/2) = (0.5*((IFY2C+conj(circshift(flipud(IFY2C),[+1,0])))...
 y(L/2+1) = 0.5*((IFY2C(1)+conj(IFY2C(1)) + 1j*(IFY2C(1)-conj(IFY2C(1)))));
 
 y(L/2+2:L) = conj(fliplr(y(2:L/2)));
- 
+
 %Changing the Control Index
 n = n+1;
 n = mod(n,Nu);
- 
+
 end %Function OS_PFB_2
 
 
@@ -596,8 +596,8 @@ if exist(headerFile, 'file')
     fid_out = fopen(fname_out, 'a');
     formatSpec = '%c'; %collects all chars
     headerString = fscanf(fInputHeaderFile, formatSpec);
-    headerLines = strsplit(headerString, '\n'); 
-    
+    headerLines = strsplit(headerString, '\n');
+
     for i=1:length(headerLines)
         % Map parameter names to values
         tempMap = strsplit(headerLines{i}); % Parse lines along whitespace
@@ -605,7 +605,7 @@ if exist(headerFile, 'file')
         % Only consider meaningful lines
         if length(tempMap) > 1
             headerMap(tempMap{1}) = tempMap{2};
-       
+
             % TSAMP must be rescaled before appending
             new_line = strcat(headerLines{i},'\n');
             if strcmp(tempMap{1},'TSAMP')
@@ -622,20 +622,20 @@ if exist(headerFile, 'file')
         tsamp_val = str2num(headerMap('TSAMP'));
 
         % Defaults
-        nchan_val = 8; 
-            % PFB downsamples by 8, only outputs 1 of the channels, 
-            % DSPSR only sees 1 channel, so we can't use NCHAN in the header 
+        nchan_val = 8;
+            % PFB downsamples by 8, only outputs 1 of the channels,
+            % DSPSR only sees 1 channel, so we can't use NCHAN in the header
         Nu_val = 1;
-        De_val = 1; 
-      
-        % Number of Channels   
-        if isKey(headerMap,'NCHAN') 
+        De_val = 1;
+
+        % Number of Channels
+        if isKey(headerMap,'NCHAN')
             nchan_val = str2num(headerMap('NCHAN'));
         end
 
         % Over-Sampling Factor
         if isKey(headerMap,'OS_FACTOR')
-            splitInput = strsplit(headerMap('OS_FACTOR'),'/'); 
+            splitInput = strsplit(headerMap('OS_FACTOR'),'/');
             Nu_val = str2num(splitInput{1});
             De_val = str2num(splitInput{2});
         end
@@ -648,7 +648,7 @@ if exist(headerFile, 'file')
 
     % Append TSAMP onto output header
     fprintf(fid_out, tsamp_line);
-  
+
     fclose(fInputHeaderFile);
     fclose(fid_out);
 end
