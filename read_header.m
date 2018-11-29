@@ -55,10 +55,10 @@ function hdr_map = read_header(hdr_filename_or_id, map)
       fprintf('Error: oversampling factor is not a fraction\nIgnore if OS_FACTOR is 1\n');
     end
   end
-
-  fprintf('sample rate before\n: %.10f', tsamp);
-  tsamp = tsamp*nchan*De_val/Nu_val;
-  fprintf('updated sample rate\n: %.10f', tsamp);
+  fprintf('oversampling factor %i/%i\n', Nu_val, De_val);
+  fprintf('sample rate before:\n\t%.10f\n', tsamp);
+  tsamp = tsamp*nchan*(De_val/Nu_val);
+  fprintf('updated sample rate:\n\t%.10f\n', tsamp);
 
   hdr_map('TSAMP') = num2str(tsamp);
 end

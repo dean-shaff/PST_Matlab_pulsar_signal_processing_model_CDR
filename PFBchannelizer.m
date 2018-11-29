@@ -51,15 +51,21 @@ function PFBchannelizer()
 clear all; clc;
 
 verbose = 1;
-diagnostic_plots = 1;
+diagnostic_plots = 0;
+current_branch = git_current_branch();
+
+% suffix='.noise_0.5';
+suffix = '.noise_0.0';
+% suffix='';
 
 % Input file name
-fname_in = 'data/simulated_pulsar.dump';
+fname_in = sprintf('data/simulated_pulsar.%s%s.dump', current_branch, suffix);
+% fname_in = 'data/simulated_pulsar.master.dump';
 
 % Output file name
 %fname_out = 'cs_channelized_pulsar.dump';
-fname_out = 'data/os_channelized_pulsar.dump';
-fname_out_full = 'data/full_channelized_pulsar.dump';
+fname_out = sprintf('data/os_channelized_pulsar.%s%s.dump', current_branch,suffix);
+fname_out_full = sprintf('data/full_channelized_pulsar.%s%s.dump', current_branch,suffix);
 
 fnames_out = {fname_out, fname_out_full};
 
@@ -117,12 +123,12 @@ if isKey(hdr_map,'BW') f_sample_in = (-1)*str2num(hdr_map('BW')); end % Samplin 
 % Multiplying factor going from output to input type
 %
 % NDIM is 1 for real input data and 2 for complex input data
-if isKey(hdr_map,'NDIM')
-    if str2num(hdr_map('NDIM'))==1 dformat='realtocomplex';
-    elseif str2num(hdr_map('NDIM'))==2 dformat='complextocomplex';
-    else warning('NDIM in header file should be 1 or 2.')
-    end
-end
+% if isKey(hdr_map,'NDIM')
+%     if str2num(hdr_map('NDIM'))==1 dformat='realtocomplex';
+%     elseif str2num(hdr_map('NDIM'))==2 dformat='complextocomplex';
+%     else warning('NDIM in header file should be 1 or 2.')
+%     end
+% end
 
 % Over-Sampling Factor
 if isKey(hdr_map,'OS_FACTOR')
@@ -144,7 +150,8 @@ end
 hdrtype = 'uint8'; % Data type for header ('uint8' = byte)
 ntype = 'single'; % Data type for each element in a pair ('single' = float)
 chan_no = 3; % Particular PFB output channel number to store to fill
-nseries = 5; % Number of input blocks to read and process
+% nseries = 80; % Number of input blocks to read and process
+nseries = 10; % Number of input blocks to read and process
 
 %=============
 % Initialisations
@@ -180,6 +187,7 @@ end
 
 %=============
 % Write header data to out files
+hdr_map('NCHAN') = '1';
 write_header(fname_out, hdr_map);
 % update NCHAN in full channelized output file
 hdr_map('NCHAN') = num2str(L);
@@ -193,9 +201,6 @@ fid_in = fopen(fname_in);
 
 % Open output file
 fid_out = fopen(fname_out, 'a');
-
-% Open output file for full channelization
-fid_out_full = fopen(fname_out_full, 'a');
 
 % Initialise output
 y2 = zeros(npol,L,Nin/M);
@@ -326,7 +331,7 @@ for ii = 1 : nseries
       fig = gcf;
       fig.PaperUnits = 'inches';
       fig.PaperPosition = [0 0 16 9];
-      plt_name = sprintf('products/channelized_data-os_%.2f-%03i.png', Os, ii);
+      plt_name = sprintf('products/channelized_data-os_%.2f-%03i.%s.png', Os, ii, current_branch);
       % print(sprintf('products/channelized_data_%i', ii),'-dpng', '-r150')
       saveas(fig, plt_name, 'png');
       % print(sprintf('products/channelized_data_%i', ii),'-dsvg'); %, '-r150')
@@ -336,7 +341,8 @@ for ii = 1 : nseries
     fwrite(fid_out, dat, ntype);
 end;
 
-
+% Open output file for full channelization
+fid_out_full = fopen(fname_out_full, 'a');
 fwrite(fid_out_full, reshape(y_full_channel, npol*2*L*(Nin/M)*nseries, 1), ntype);
 
 fclose(fid_in);

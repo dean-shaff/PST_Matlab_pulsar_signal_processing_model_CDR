@@ -10,11 +10,10 @@ function write_header(out_filename_or_id, hdr_map)
         hdr_str = hdr_str + newline;
       end
     end
-
     hdr_size = str2num(hdr_map('HDR_SIZE'));
-    n_remaining = hdr_size - length(hdr_str);
-    hdr_remaining = char('0' * zeros(n_remaining, 1));
     hdr_char = char(hdr_str);
+    n_remaining = hdr_size - length(hdr_char);
+    hdr_remaining = char('0' * zeros(n_remaining, 1));
 
     fid = out_filename_or_id;
     if isstring(out_filename_or_id) || ischar(out_filename_or_id)

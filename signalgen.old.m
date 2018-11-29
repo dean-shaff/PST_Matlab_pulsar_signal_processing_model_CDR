@@ -53,11 +53,12 @@ function signalgen()
 
 %=============
 verbose = 1;
-
+current_branch = git_current_branch();
+fname = sprintf('data/simulated_pulsar.%s.dump', current_branch);
+headerFile = 'config/gen.header'; %Use a better name
 
 %=============
 % Default settings for variables that might be found in a header file
-headerFile = 'config/gen.header'; %Use a better name
 
 hdrsize = 4096; % Header size
 npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
@@ -75,27 +76,27 @@ dformat = 'complextoreal'; %specifies conversion TO real or complex data
 % Header settings for variables, where they exist
 %
 % Get data from header
-hdr_map = containers.Map; %empty map
-% hdr_map = headerReadIn(headerFile, hdr_map);
-hdr_map = read_header(headerFile, hdr_map);
+headerMap = containers.Map; %empty map
+headerMap = headerReadIn(headerFile, headerMap);
+
 % Header size
-if isKey(hdr_map,'HDR_SIZE') hdrsize = str2num(hdr_map('HDR_SIZE')); end
+if isKey(headerMap,'HDR_SIZE') hdrsize = str2num(headerMap('HDR_SIZE')); end
 % Number of polarizations
-if isKey(hdr_map,'NPOL') npol = str2num(hdr_map('NPOL')); end
+if isKey(headerMap,'NPOL') npol = str2num(headerMap('NPOL')); end
 % Centre frequency (MHz)
-if isKey(hdr_map,'FREQ') f0 = str2num(hdr_map('FREQ')); end
+if isKey(headerMap,'FREQ') f0 = str2num(headerMap('FREQ')); end
 % Pulsar period
-if isKey(hdr_map, 'CALFREQ') T_pulsar = 1.0/str2num(hdr_map('CALFREQ')); end
+if isKey(headerMap, 'CALFREQ') T_pulsar = 1.0/str2num(headerMap('CALFREQ')); end
 
 % Set bandwidth
-% if isKey(hdr_map,'BW') f_sample_out = (-1)*str2num(hdr_map('BW')); end % Sampling frequency of output (MHz)
+% if isKey(headerMap,'BW') f_sample_out = (-1)*str2num(headerMap('BW')); end % Sampling frequency of output (MHz)
 
 % Multiplying factor going from input to output type
 %
 % NDIM is 1 for real output data and 2 for complex output data
-% if isKey(hdr_map,'NDIM')
-%     if str2num(hdr_map('NDIM'))==1 dformat='complextoreal';
-%     elseif str2num(hdr_map('NDIM'))==2 dformat='complextocomplex';
+% if isKey(headerMap,'NDIM')
+%     if str2num(headerMap('NDIM'))==1 dformat='complextoreal';
+%     elseif str2num(headerMap('NDIM'))==2 dformat='complextocomplex';
 %     else warning('NDIM in header file should be 1 or 2.')
 %     end
 % end
@@ -109,7 +110,7 @@ ntype = 'single'; % Data type for each element in a pair ('single' = float)
 Nout = 2^20; %Length of each output vector
 nbins = 2^10; % Number of bins within a pulse period
 nseries = 30; % Number of FFT's to perform
-noise = 0.0;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
+noise = 0.3;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
 shift = 0; % performs an fftshift before the inverse FFT
 switch dformat
     case 'complextoreal'
@@ -174,18 +175,15 @@ end
 trel = (0:Nin-1)*Tin;
 
 %===============
-current_branch = git_current_branch();
-fname = sprintf('data/simulated_pulsar.%s.noise_%.1f.dump', current_branch, noise);
 % Open file for writing
-remove(hdr_map, 'NCHAN');
-% hdr_map('NCHAN') = '1';
-hdr_map('TSAMP') = num2str(Tout * 1e6);
-hdr_map('BW') = num2str(f_sample_out/Nmul);
-hdr_map('NDIM') = num2str(NperPol);
-
+headerMap('NCHAN') = '1';
+headerMap('FSAMP') = num2str(df);
+headerMap('BW') = num2str(f_sample_out);
+headerMap('NDIM') = num2str(NperPol);
+headerMap('NOISE_FACTOR') = num2str(noise);
 fid = fopen(fname, 'w');
-write_header(fid, hdr_map);
-fid = fopen(fname, 'a');
+write_header(fid, headerMap); fig = fopen(fname, 'a');
+
 %=============
 % Random vectors
 for ii = 1:nseries,
@@ -284,6 +282,7 @@ end;
 fclose(fid);
 return
 
+exit();
 end
 
 
@@ -394,7 +393,7 @@ end
 
 
 % Function to pull observation parameters from a header file
-function hdr_map = headerReadIn(headerFile, hdr_map)
+function headerMap = headerReadIn(headerFile, headerMap)
 % This reads a header file typical of pulsar observations
 % (dada, cspsr2, etc.) and parses the parameters found there.
 % When the .dump file is prepared, the header and .dump
@@ -402,7 +401,7 @@ function hdr_map = headerReadIn(headerFile, hdr_map)
 % fill up the the header, before being read into DSPSR
 
 if exist(headerFile, 'file')
-    'The header file was found';
+    'The header file was found'
     fheaderFile = fopen(headerFile, 'r');
     formatSpec = '%c'; %collects all chars
     headerString = fscanf(fheaderFile, formatSpec);
@@ -411,7 +410,7 @@ if exist(headerFile, 'file')
     for i=1:length(headerLines)
        tempMap = strsplit(headerLines{i}); % Parse lines along whitespace
        if length(tempMap) > 1
-          hdr_map(tempMap{1}) = tempMap{2};
+          headerMap(tempMap{1}) = tempMap{2};
        end
     end
     fclose(fheaderFile);
