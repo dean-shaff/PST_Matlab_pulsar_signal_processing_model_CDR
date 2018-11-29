@@ -58,6 +58,7 @@ function write_default_header (fid, hdrsize, dformat)
     hdr_map('BW') = BW;
     hdr_map('TSAMP') = tsamp;
     hdr_map('NCHAN') = nchan;
+    hdr_map('OS_FACTOR') = '8/7';
 
     hdr_str = "";
 

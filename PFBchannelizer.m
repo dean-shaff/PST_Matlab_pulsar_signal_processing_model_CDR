@@ -48,7 +48,7 @@ function PFBchannelizer()
 % ----------------------------------------------------------------------
 
 close all; clear all; clc;
-
+diagnostic_plots = 1;
 % Input file name
 current_branch = git_current_branch();
 fname_in = sprintf('data/simulated_pulsar.%s.dump', current_branch);
@@ -96,7 +96,7 @@ dformat = 'realtocomplex'; %specifies conversion OF real or complex data
 Nin = M*(2^14);  % Number of elements per input file read
 f_sample_in = 80.; % Sampling frequency of input (MHz)
 chan_no = 3; % Particular PFB output channel number to store to file
-nseries = 5; % Number of input blocks to read and process
+nseries = 80; % Number of input blocks to read and process
 % nseries = 5;
 %=============
 % Initialisations
@@ -224,6 +224,40 @@ for ii = 1 : nseries
     y_all(2,:,s:e) = imag(y2(1,:,(1:Nin/M)));
     y_all(3,:,s:e) = real(y2(2,:,(1:Nin/M)));
     y_all(4,:,s:e) = imag(y2(2,:,(1:Nin/M)));
+
+    if diagnostic_plots
+       t = (1:Nin/M);
+       fig = figure('visible', 'off');
+       for c=1:L
+         for p=1:npol
+           for z=1:2
+             z_name = 'Real';
+             if z == 2
+               z_name = 'Imag';
+             end
+
+             subplot_idx = z + (p-1)*2 + (c-1)*(npol*2);
+             idx = npol*(p - 1) + z;
+
+             y1_plot(1:Nin/M) = y_all(idx,c,s:e);
+             subplot(L, npol*2, subplot_idx);
+             plot(t, y1_plot); box on; grid on;
+             title(sprintf('Output %s Pol %i Channel %i', z_name, p, c));
+             xlabel('time');
+             ax = gca;
+             set(ax,'FontSize', 5);
+           end
+         end
+       end
+       fig = gcf;
+       fig.PaperUnits = 'inches';
+       fig.PaperPosition = [0 0 16 9];
+       plt_name = sprintf('products/channelized_data-os_%.2f-%03i.%s.png', Os, ii, current_branch);
+       % print(sprintf('products/channelized_data_%i', ii),'-dpng', '-r150')
+       saveas(fig, plt_name, 'png');
+       % print(sprintf('products/channelized_data_%i', ii),'-dsvg'); %, '-r150')
+       % pause
+   end
 
 %     dat_all = y2(:,:,(1:Nin/M));
 %
