@@ -80,8 +80,11 @@ DM = 2.64476; % pc/cm^3
 pcal = struct('a',0.00575745,'b',0.0);% Pulsar period (s) and other params
 t0 = 0.0; % Absolute time (in seconds) of first time element
 
-fname = sprintf('data/simulated_pulsar.dm.%s.dump', num2str(DM));
-fname_tfp = sprintf('data/simulated_pulsar.tfp.dm.%s.dump', num2str(DM));
+% fname = sprintf('data/simulated_pulsar.dm.%s.dump', num2str(DM));
+% fname_tfp = sprintf('data/simulated_pulsar.tfp.dm.%s.dump', num2str(DM));
+current_branch = git_current_branch();
+fname = sprintf('data/simulated_pulsar.%s.dump', current_branch);
+fname_tfp = sprintf('data/simulated_pulsar.tfp.%s.dump', current_branch);
 
 %===============
 %Multiplying factor going from input to output type

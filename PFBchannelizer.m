@@ -50,12 +50,13 @@ function PFBchannelizer()
 close all; clear all; clc;
 
 % Input file name
-fname_in = 'data/simulated_pulsar.dm.2.6448.dump';
+current_branch = git_current_branch();
+fname_in = sprintf('data/simulated_pulsar.%s.dump', current_branch);
 
 % Output file name
 %fname_out = 'cs_channelized_pulsar.dump';
-fname_out = 'data/os_channelized_pulsar.dump';
-fname_out_all = 'data/full_channelized_pulsar.dump';
+fname_out = sprintf('data/os_channelized_pulsar.%s.dump', current_branch);
+fname_out_all = sprintf('data/full_channelized_pulsar.%s.dump', current_branch);
 %=======================================
 % PFB parameters
 
@@ -95,7 +96,7 @@ dformat = 'realtocomplex'; %specifies conversion OF real or complex data
 Nin = M*(2^14);  % Number of elements per input file read
 f_sample_in = 80.; % Sampling frequency of input (MHz)
 chan_no = 3; % Particular PFB output channel number to store to file
-nseries = 80; % Number of input blocks to read and process
+nseries = 5; % Number of input blocks to read and process
 % nseries = 5;
 %=============
 % Initialisations

@@ -9,3 +9,5 @@ products/*
 *.ar
 *.log
 *.png*
+log
+*.mp4
