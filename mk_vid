@@ -1,3 +1,2 @@
 #! /bin/bash
-ffmpeg -framerate 1/5 -i products/*%03d.png -c:v libx264 -r 30 -pix_fmt yuv420p out.mp4
-
+ffmpeg -framerate 1/5 -i products/channelized_data_%03d.png -r 30 -pix_fmt yuv420p out.mp4

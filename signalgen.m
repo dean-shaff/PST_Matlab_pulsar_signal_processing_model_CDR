@@ -69,7 +69,7 @@ f_sample_out = 80; % Sampling frequency of output (MHz)
 
 % Multiplying factor going from input to output type
 dformat = 'complextoreal'; %specifies conversion TO real or complex data
-%dformat = 'complextocomplex'; %specifies conversion TO real or complex data
+% dformat = 'complextocomplex'; %specifies conversion TO real or complex data
 
 %=============
 % Header settings for variables, where they exist
@@ -162,7 +162,7 @@ if verbose
   fprintf('df: %f\n',df);
   fprintf('Nin: %d\n',Nin);
 end
-return
+% return
 %===============
 % Calculate phase-dependent Stokes parameters and coherency matrix
 % using the rotating vector model

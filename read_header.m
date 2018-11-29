@@ -47,9 +47,13 @@ function hdr_map = read_header(hdr_filename_or_id, map)
   De_val = 1; % denominator value
   % Over-Sampling Factor
   if isKey(hdr_map,'OS_FACTOR')
+    try
       splitInput = strsplit(hdr_map('OS_FACTOR'),'/');
       Nu_val = str2num(splitInput{1});
       De_val = str2num(splitInput{2});
+    catch
+      fprintf('Error: oversampling factor is not a fraction\nIgnore if OS_FACTOR is 1\n');
+    end
   end
 
   fprintf('sample rate before\n: %.10f', tsamp);

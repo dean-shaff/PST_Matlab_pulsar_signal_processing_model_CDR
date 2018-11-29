@@ -51,6 +51,7 @@ function PFBchannelizer()
 clear all; clc;
 
 verbose = 1;
+diagnostic_plots = 1;
 
 % Input file name
 fname_in = 'data/simulated_pulsar.dump';
@@ -91,13 +92,13 @@ f_sample_in = 80; % Sampling frequency of input (MHz)
 
 % Multiplying factor going from input to output type
 dformat = 'realtocomplex';
-%dformat = 'complextocomplex'; %specifies conversion TO real or complex data
+% dformat = 'complextocomplex'; %specifies conversion TO real or complex data
 
 % PFB type
-pfb_type = 1; % 0 for critically sampled, 1 for oversampled
-% OverSampling
-Nu = 8; %Numerator
-De = 7; %Denominator
+% The following may get reset when setting parameters from header map
+pfb_type = 0; % 0 for critically sampled, 1 for oversampled
+Nu = 1; %Numerator
+De = 1; %Denominator
 
 
 %=============
@@ -125,14 +126,17 @@ end
 
 % Over-Sampling Factor
 if isKey(hdr_map,'OS_FACTOR')
+  try
     splitInput = strsplit(hdr_map('OS_FACTOR'),'/'); %what if OS_FACTOR is just 1?
     Nu = str2num(splitInput{1});
     De = str2num(splitInput{2});
-    if (Nu == 1 && De == 1)
-        pfb_type=0; %for CSing
-    else
-        pfb_type=1; %for OSing
-    end
+  catch
+  end
+  if (Nu == 1 && De == 1)
+      pfb_type=0; %for CSing
+  else
+      pfb_type=1; %for OSing
+  end
 end
 
 %=======================================
@@ -215,6 +219,7 @@ if verbose
   fprintf('L (number of output channels): %i\n', L);
   fprintf('total datasize: %i\n', npol*2*(Nin/M)*nseries*L);
   fprintf('ntype: %s\n', ntype);
+  fprintf('dformat: %s\n', dformat);
   fprintf('oversampling factor: %f, pfb_type: %i\n', Os, pfb_type);
 end
 
@@ -270,8 +275,6 @@ for ii = 1 : nseries
         end;
     end;
 
-
-
     % Interleave polarizations and real/imag
     % (selecting just the required output channel number)
     z1_y2(1:Nin/M) = y2(1,chan_no,(1:Nin/M));
@@ -283,43 +286,52 @@ for ii = 1 : nseries
     % write data to y_full_channel
     s = (Nin/M)*(ii - 1) + 1;
     e = (Nin/M)*ii;
+    % for c=1:L
+    %   y_full_channel(1,c,s:e) = real(y2(1,c,(1:Nin/M)));
+    %   y_full_channel(2,c,s:e) = imag(y2(1,c,(1:Nin/M)));
+    %   y_full_channel(3,c,s:e) = real(y2(2,c,(1:Nin/M)));
+    %   y_full_channel(4,c,s:e) = imag(y2(2,c,(1:Nin/M)));
+    % end
+
     y_full_channel(1,:,s:e) = real(y2(1,:,(1:Nin/M)));
     y_full_channel(2,:,s:e) = imag(y2(1,:,(1:Nin/M)));
     y_full_channel(3,:,s:e) = real(y2(2,:,(1:Nin/M)));
     y_full_channel(4,:,s:e) = imag(y2(2,:,(1:Nin/M)));
 
-    t = (1:Nin/M);
-    fig = figure('visible', 'off');
-    for c=1:L
-      for p=1:npol
-        for z=1:2
-          z_name = 'Real';
-          if z == 2
-            z_name = 'Imag';
+
+    if diagnostic_plots
+      t = (1:Nin/M);
+      fig = figure('visible', 'off');
+      for c=1:L
+        for p=1:npol
+          for z=1:2
+            z_name = 'Real';
+            if z == 2
+              z_name = 'Imag';
+            end
+
+            subplot_idx = z + (p-1)*2 + (c-1)*(npol*2);
+            idx = npol*(p - 1) + z;
+
+            y1_plot(1:Nin/M) = y_full_channel(idx,c,s:e);
+            subplot(L, npol*2, subplot_idx);
+            plot(t, y1_plot); box on; grid on;
+            title(sprintf('Output %s Pol %i Channel %i', z_name, p, c));
+            xlabel('time');
+            ax = gca;
+            set(ax,'FontSize', 5);
           end
-
-          subplot_idx = z + (p-1)*2 + (c-1)*(npol*2);
-          idx = npol*(p - 1) + z;
-
-          y1_plot(1:Nin/M) = y_full_channel(idx,c,s:e);
-          subplot(L, npol*2, subplot_idx);
-          plot(t, y1_plot); box on; grid on;
-          title(sprintf('Output %s Pol %i Channel %i', z_name, p, c));
-          xlabel('time');
-          ax = gca;
-          set(ax,'FontSize', 5);
         end
       end
+      fig = gcf;
+      fig.PaperUnits = 'inches';
+      fig.PaperPosition = [0 0 16 9];
+      plt_name = sprintf('products/channelized_data-os_%.2f-%03i.png', Os, ii);
+      % print(sprintf('products/channelized_data_%i', ii),'-dpng', '-r150')
+      saveas(fig, plt_name, 'png');
+      % print(sprintf('products/channelized_data_%i', ii),'-dsvg'); %, '-r150')
+      % pause
     end
-    fig = gcf;
-    fig.PaperUnits = 'inches';
-    fig.PaperPosition = [0 0 16 9];
-    plt_name = sprintf('products/channelized_data_%03i', ii);
-    % print(sprintf('products/channelized_data_%i', ii),'-dpng', '-r150')
-    saveas(fig, plt_name, 'png');
-    % print(sprintf('products/channelized_data_%i', ii),'-dsvg'); %, '-r150')
-    % pause
-
     %Write vector to file
     fwrite(fid_out, dat, ntype);
 end;
