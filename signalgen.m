@@ -109,7 +109,7 @@ ntype = 'single'; % Data type for each element in a pair ('single' = float)
 Nout = 2^20; %Length of each output vector
 nbins = 2^10; % Number of bins within a pulse period
 nseries = 30; % Number of FFT's to perform
-noise = 0.0;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
+noise = 0.5;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
 shift = 0; % performs an fftshift before the inverse FFT
 switch dformat
     case 'complextoreal'

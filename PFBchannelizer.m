@@ -54,8 +54,8 @@ verbose = 1;
 diagnostic_plots = 0;
 current_branch = git_current_branch();
 
-% suffix='.noise_0.5';
-suffix = '.noise_0.0';
+suffix='.noise_0.5';
+% suffix = '.noise_0.0';
 % suffix='';
 
 % Input file name
@@ -67,16 +67,16 @@ fname_in = sprintf('data/simulated_pulsar.%s%s.dump', current_branch, suffix);
 fname_out = sprintf('data/os_channelized_pulsar.%s%s.dump', current_branch,suffix);
 fname_out_full = sprintf('data/full_channelized_pulsar.%s%s.dump', current_branch,suffix);
 
-fnames_out = {fname_out, fname_out_full};
+% fnames_out = {fname_out, fname_out_full};
 
 % Clear out the output file
     % Various pieces append at different points,
     % so this ensures that the file starts clean every time
-for fname=fnames_out
-  fid = fopen(fname{1}, 'w');
-  fclose(fid);
-end
-
+% for fname=fnames_out
+%   fid = fopen(fname{1}, 'w');
+%   fclose(fid);
+% end
+%
 % Header name
 headerFileName = 'config/gen.header';
 
@@ -192,12 +192,15 @@ write_header(fname_out, hdr_map);
 % update NCHAN in full channelized output file
 hdr_map('NCHAN') = num2str(L);
 write_header(fname_out_full, hdr_map);
-
+% s = dir(fname_out_full);
+% disp(s);
+% return
 %==============
 % Prepare for main loop
 
 % Open input file
 fid_in = fopen(fname_in);
+fread(fid_in, 4096, 'uint8');
 
 % Open output file
 fid_out = fopen(fname_out, 'a');
