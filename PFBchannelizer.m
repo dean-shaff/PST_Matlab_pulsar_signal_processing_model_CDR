@@ -51,7 +51,7 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
 % clear all; clc;
 
 % Declare global variables
-global L; global M; global L_M; global fname_pfb; global Nu; global De;
+global L; global M; global L_M; global fname_pfb; global Nu; global De; global ntype;
 
 verbose = 0;
 if exist('verbose_', 'var')
@@ -141,15 +141,6 @@ chan_no = 3; % Particular PFB output channel number to store to fill
 %     fname_pfb = 'config/OS_Prototype_FIR_8.mat';
 % end
 
-Os = Nu/De;
-fname_pfb = 'config/OS_Prototype_FIR_8.mat';
-% Number of channels in filter-bank
-L= 8;
-M = L/Os; % Commutator Length
-L_M = L-M; % Overlap
-Nin = M*(2^14);  % Number of elements per input file read
-
-
 % Set up parameters depending on whether incoming data is real or complex
 switch dformat
     case 'realtocomplex'
@@ -161,6 +152,16 @@ switch dformat
     otherwise
         warning('Conversion should be realtocomplex or complextocomplex.');
 end
+
+
+Os = Nu/De;
+fname_pfb = 'config/OS_Prototype_FIR_8.mat';
+% Number of channels in filter-bank
+L= 8;
+M = L/Os; % Commutator Length
+L_M = L-M; % Overlap
+Nin = M*(2^14);  % Number of elements per input file read
+output_samples = (Nin/M)/Nmul;
 
 %=============
 % Write header data to out files
@@ -200,7 +201,7 @@ end
 % Initial full channelized output,
 % for ordering in TFP (Time Frequency Polarization)
 % This ordering is required in order to be read by dspsr
-y_full_channel = zeros(npol*2, L, (Nin/M)*nseries,ntype);
+y_full_channel = zeros(npol*2, L, (output_samples)*nseries,ntype);
 %===============
 % Main loop
 % Read input blocks and filter
@@ -250,6 +251,13 @@ for ii=1:nseries
     % Separate data into different polarisations: Vdat(1,:) and Vdat(2,:)
     Vdat = reshape(Vstream, npol, []);
 
+    % in the case of real to complex, we have to downsample our data
+    size(Vdat);
+    if Nmul == 2
+      Vdat = Vdat(:,1:2:end);
+    end
+    size(Vdat);
+
     if diagnostic_plots
       figure;
       subplot(221); plot((1:Nin),real(Vdat(1,1:Nin))); box on; grid on;
@@ -264,7 +272,7 @@ for ii=1:nseries
     end
     % Evaluate the channel outputs
     % First pol
-    for n = 1 : Nin/M
+    for n = 1 : output_samples
         if pfb_type == 0
             y2(1,:,n) = CS_PFB_1(Vdat(1,(n-1)*L+1:n*L));
             % pause;
@@ -277,7 +285,7 @@ for ii=1:nseries
         end;
     end;
     % Second pol - must use different function due to persistent variables
-    for n = 1 : Nin/M
+    for n = 1 : output_samples
         if pfb_type == 0,
             y2(2,:,n) = CS_PFB_2(Vdat(2,(n-1)*L+1:n*L));
         else
@@ -287,29 +295,29 @@ for ii=1:nseries
 
     % Interleave polarizations and real/imag
     % (selecting just the required output channel number)
-    % z1_y2(1:Nin/M) = y2(1,chan_no,(1:Nin/M));
-    % z2_y2(1:Nin/M) = y2(2,chan_no,(1:Nin/M));
+    % z1_y2(1:output_samples) = y2(1,chan_no,(1:output_samples));
+    % z2_y2(1:output_samples) = y2(2,chan_no,(1:output_samples));
     % z = [real(transpose(z1_y2)), imag(transpose(z1_y2)),...
     %      real(transpose(z2_y2)), imag(transpose(z2_y2))];
-    % dat = reshape(transpose(z),2*npol*Nin/M,1);
+    % dat = reshape(transpose(z),2*npol*output_samples,1);
 
     % write data to y_full_channel
-    s = (Nin/M)*(ii - 1) + 1;
-    e = (Nin/M)*ii;
+    s = (output_samples)*(ii - 1) + 1;
+    e = (output_samples)*ii;
     % for c=1:L
-    %   y_full_channel(1,c,s:e) = real(y2(1,c,(1:Nin/M)));
-    %   y_full_channel(2,c,s:e) = imag(y2(1,c,(1:Nin/M)));
-    %   y_full_channel(3,c,s:e) = real(y2(2,c,(1:Nin/M)));
-    %   y_full_channel(4,c,s:e) = imag(y2(2,c,(1:Nin/M)));
+    %   y_full_channel(1,c,s:e) = real(y2(1,c,(1:output_samples)));
+    %   y_full_channel(2,c,s:e) = imag(y2(1,c,(1:output_samples)));
+    %   y_full_channel(3,c,s:e) = real(y2(2,c,(1:output_samples)));
+    %   y_full_channel(4,c,s:e) = imag(y2(2,c,(1:output_samples)));
     % end
 
-    y_full_channel(1,:,s:e) = real(y2(1,:,(1:Nin/M)));
-    y_full_channel(2,:,s:e) = imag(y2(1,:,(1:Nin/M)));
-    y_full_channel(3,:,s:e) = real(y2(2,:,(1:Nin/M)));
-    y_full_channel(4,:,s:e) = imag(y2(2,:,(1:Nin/M)));
+    y_full_channel(1,:,s:e) = real(y2(1,:,(1:output_samples)));
+    y_full_channel(2,:,s:e) = imag(y2(1,:,(1:output_samples)));
+    y_full_channel(3,:,s:e) = real(y2(2,:,(1:output_samples)));
+    y_full_channel(4,:,s:e) = imag(y2(2,:,(1:output_samples)));
 
     if diagnostic_plots
-      t = (1:Nin/M);
+      t = (1:output_samples);
       % fig = figure('visible', 'off');
       fig = figure();
       for c=1:L
@@ -323,7 +331,7 @@ for ii=1:nseries
             subplot_idx = z + (p-1)*2 + (c-1)*(npol*2);
             idx = npol*(p - 1) + z;
 
-            y1_plot(1:Nin/M) = y_full_channel(idx,c,s:e);
+            y1_plot(1:output_samples) = y_full_channel(idx,c,s:e);
             subplot(L, npol*2, subplot_idx);
             plot(t, y1_plot); box on; grid on;
             title(sprintf('Output %s Pol %i Channel %i', z_name, p, c));
@@ -351,7 +359,7 @@ end;
 
 % Open output file for full channelization
 fid_out = fopen(fname_out, 'a');
-fwrite(fid_out, reshape(y_full_channel, npol*2*L*(Nin/M)*nseries, 1), ntype);
+fwrite(fid_out, reshape(y_full_channel, npol*2*L*(output_samples)*nseries, 1), ntype);
 
 fclose(fid_in);
 fclose(fid_out);
@@ -367,7 +375,7 @@ end
 % code by Thushara Kanchana Gunaratne, RO/RCO, NSI-NRC, Canada, 2015-03-05
 function y = CS_PFB_1(x)
 
-global L; global fname_pfb;
+global L; global fname_pfb; global ntype;
 
 %Declaration and Initialization of Input Mask
 %As Persistence Variables
@@ -377,14 +385,13 @@ if isempty(n)
     %Loading the Prototype Filter as an initiation task
     %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
-    h = FiltCoefStruct.h;
+    h = single(FiltCoefStruct.h);
     %Initiate the Input Mask that is multiplied with the Filter mask
-    xM = zeros(1,length(h));
+    xM = zeros(1,length(h), ntype);
     %Initiate the Output mask
-    yP = zeros(L,1);
+    yP = zeros(L,1, ntype);
     %Control Index - Initiation
     n = 0;
-
 end; %End if
 
 %Multiplying the Indexed Input Mask and Filter Mask elements and
@@ -435,7 +442,7 @@ end %Function CS_PFB_1
 % code by Thushara Kanchana Gunaratne, RO/RCO, NSI-NRC, Canada, 2015-03-05
 function y = CS_PFB_2(x)
 
-global L; global fname_pfb;
+global L; global fname_pfb; global ntype;
 
 %Declaration and Initialization of Input Mask
 %As Persistence Variables
@@ -445,12 +452,12 @@ if isempty(n)
     %Loading the Prototype Filter as an initiation task
     %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
-    h = FiltCoefStruct.h;
+    h = single(FiltCoefStruct.h);
 
     %Initiate the Input Mask that is multiplied with the Filter mask
-    xM = zeros(1,length(h));
+    xM = zeros(1,length(h), ntype);
     %Initiate the Output mask
-    yP = zeros(L,1);
+    yP = zeros(L,1, ntype);
 
     %Control Index - Initiation
     n = 0;
@@ -506,22 +513,21 @@ end %Function CS_PFB_2
 % Thushara Kanchana Gunaratne, RO/RCO, NSI-NRC, Canada, 2015-03-05
 function y = OS_PFB_1(x)
 
-global L; global Nu; global M; global L_M; global fname_pfb;
+global L; global Nu; global M; global L_M; global fname_pfb; global ntype;
 
 %Declaration and Initialization of Input Mask
 %As Persistance Variables
 persistent n h xM;
 if isempty(n)
-
     %Loading the Prototype Filter as an initiation task
     %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
-    h = FiltCoefStruct.h;
+    h = single(FiltCoefStruct.h);
 
     %Initiate the Input Mask that is multiplied with the Filter mask
-    xM = zeros(1,length(h));
+    xM = zeros(1,length(h), ntype);
     %Initiate the Output mask
-    yP = zeros(L,1);
+    yP = zeros(L,1, ntype);
 
     %Control Index - Initiation
     n = 0;
@@ -588,7 +594,7 @@ end %Function OS_PFB_1
 % Thushara Kanchana Gunaratne, RO/RCO, NSI-NRC, Canada, 2015-03-05
 function y = OS_PFB_2(x)
 
-global L; global Nu; global M; global L_M; global fname_pfb;
+global L; global Nu; global M; global L_M; global fname_pfb; global ntype;
 
 %Declaration and Initialization of Input Mask
 %As Persistance Variables
@@ -598,12 +604,12 @@ if isempty(n)
     %Loading the Prototype Filter as an initiation task
     %This Will NOT repeat in subsequent runs
     FiltCoefStruct = load(fname_pfb);
-    h = FiltCoefStruct.h;
+    h = single(FiltCoefStruct.h);
 
     %Initiate the Input Mask that is multiplied with the Filter mask
-    xM = zeros(1,length(h));
+    xM = zeros(1,length(h), ntype);
     %Initiate the Output mask
-    yP = zeros(L,1);
+    yP = zeros(L,1, ntype);
 
     %Control Index - Initiation
     n = 0;

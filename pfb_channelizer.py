@@ -84,10 +84,12 @@ class PFBChannelizer:
 
         t0 = time.time()
         self._pfb_config = scipy.io.loadmat(self.pfb_fir_config_file_path)
-        self._pfb_filter_coef = self._pfb_config["h"].reshape(-1)
+        self._pfb_filter_coef = self._pfb_config["h"].reshape(-1).astype(self.float_dtype)
+
         rem = self._pfb_filter_coef.shape[0] % self._output_nchan
         if rem != 0:
-            self._pfb_filter_coef = np.append(self._pfb_filter_coef, np.zeros(self._output_nchan - rem))
+            self._pfb_filter_coef = np.append(
+                self._pfb_filter_coef, np.zeros(self._output_nchan - rem))
 
         input_mask_dtype = self.float_dtype
         if self._input_ndim == 2:
@@ -98,19 +100,24 @@ class PFBChannelizer:
             dtype=input_mask_dtype
         )
 
-        self._pfb_output_mask = np.zeros((self._output_npol, self._output_nchan), dtype=self.complex_dtype)
+        self._pfb_output_mask = np.zeros(
+            (self._output_npol, self._output_nchan), dtype=self.complex_dtype)
         self.logger.debug(
-            f"_load_pfb_config: self._pfb_filter_coef.shape: {self._pfb_filter_coef.shape}")
+            (f"_load_pfb_config: self._pfb_filter_coef.shape:"
+             " {self._pfb_filter_coef.shape}"))
         self.logger.debug(
-            f"_load_pfb_config: Took {time.time()-t0:.4f} seconds to load pfb configuration data")
+            (f"_load_pfb_config: Took {time.time()-t0:.4f} "
+             "seconds to load pfb configuration data"))
 
     def _load_input_data(self):
 
         t0 = time.time()
         with open(self.input_file_path, "rb") as input_file:
             buffer = input_file.read()
-            header = np.frombuffer(buffer, dtype='c', count=self.header_size)
-            data = np.frombuffer(buffer, dtype=self.float_dtype, offset=self.header_size)
+            header = np.frombuffer(
+                buffer, dtype='c', count=self.header_size)
+            data = np.frombuffer(
+                buffer, dtype=self.float_dtype, offset=self.header_size)
         self.logger.debug(
             f"_load_input_data: Took {time.time()-t0:.4f} seconds to load input data")
 
@@ -251,10 +258,11 @@ class PFBChannelizer:
                 else:
                     shift_idx = (nu-n_os_ctrl)*nchan_overlap
                     output_mask = np.append(
-                        self._pfb_output_mask[shift_idx:],
-                        self._pfb_output_mask[:shift_idx]
+                        self._pfb_output_mask[ipol,shift_idx:],
+                        self._pfb_output_mask[ipol,:shift_idx]
                     )
                 n_os_ctrl = n_os_ctrl % nu
+                n_os_ctrl += 1
             else:
                 output_mask = self._pfb_output_mask[ipol,:]
 
@@ -396,14 +404,10 @@ class PFBChannelizer:
             for p in range(self._input_npol):
                 coro = pfb_coro[p]
                 sink = pfb_consumer[p]
-                for j in range(self._output_samples-1):
+                for j in range(self._output_samples):
                     coro.send(input_chunk[norm_chan*j:norm_chan*(j+1),p])
                     output_chunk[j,:,p] = sink.val.copy()
                     # input(">> ")
-                    # if i ==1:
-                    #     print(sink.val)
-                    #     input(">> ")
-
 
             s = self._output_samples*i
             e = self._output_samples*(i+1)
@@ -452,15 +456,24 @@ def compare_matlab_py(*fnames, **kwargs):
             header = np.frombuffer(buffer, dtype='c', count=PFBChannelizer.header_size)
             data = np.frombuffer(buffer, dtype=PFBChannelizer.float_dtype, offset=PFBChannelizer.header_size)
             comp_dat.append(data)
-    # print(np.allclose(*comp_dat, **kwargs))
-    # fig, axes = plt.subplots(len(fnames)+1)
-    # axes[0].plot(comp_dat[0])
-    # axes[1].plot(comp_dat[1])
-    # diff_squared = (comp_dat[0] - comp_dat[1])**2
-    # print(np.argmax(diff_squared))
-    # print(np.mean(diff_squared == 0.0))
-    # axes[2].plot(diff_squared)
-    # plt.show()
+    fig, axes = plt.subplots(len(fnames)+1)
+    for ax in axes:
+        ax.grid(True)
+    axes[0].plot(comp_dat[0])
+    axes[1].plot(comp_dat[1])
+    diff_squared = (comp_dat[0] - comp_dat[1])**2
+    axes[2].plot(diff_squared)
+    argmax = np.argmax(diff_squared)
+    if not np.allclose(*comp_dat, **kwargs):
+        print(comp_dat[0][argmax], comp_dat[1][argmax])
+        for i in range(3):
+            axes[i].set_xlim([argmax-100, argmax+100])
+
+        print(f"{np.sum(diff_squared == 0.0)}/{diff_squared.shape[0]} are zero.")
+    else:
+        print("all close!")
+
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -479,11 +492,11 @@ if __name__ == "__main__":
     # channelizer._init_output_data()
     # channelizer._init_output_header()
     # channelizer._dump_data(channelizer.output_header, channelizer.output_data)
-    channelizer.channelize(diagnostic_plots=False, order='C')
+    channelizer.channelize()
 
-    # compare_matlab_py(
-    #     channelizer.output_file_path,
-    #     "data/full_channelized_pulsar.noise_0.0.nseries_1.ndim_1.cs.dump",
-    #     rtol=1e-3,
-    #     atol=1e-3
-    # )
+    compare_matlab_py(
+        "data/py_channelized.noise_0.0.nseries_5.ndim_1.os.dump",
+        "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.os.dump",
+        rtol=1e-3,
+        atol=1e-3
+    )
