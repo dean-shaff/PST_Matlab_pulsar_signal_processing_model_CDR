@@ -1,4 +1,4 @@
-function signalgen()
+function fname = signalgen(nseries, noise, verbose_)
 % Generates a file containing dual noise vectors with phase-dependent
 % partial polarization. File is 32-bit floating point with polarizations
 % interleaved at each time step.
@@ -53,6 +53,9 @@ function signalgen()
 
 %=============
 verbose = 1;
+if exist('verbose_', 'var')
+  verbose = verbose_
+end
 
 
 %=============
@@ -72,33 +75,33 @@ dformat = 'complextoreal'; %specifies conversion TO real or complex data
 % dformat = 'complextocomplex'; %specifies conversion TO real or complex data
 
 %=============
-% Header settings for variables, where they exist
-%
 % Get data from header
-hdr_map = containers.Map; %empty map
-% hdr_map = headerReadIn(headerFile, hdr_map);
-hdr_map = read_header(headerFile, hdr_map);
-% Header size
-if isKey(hdr_map,'HDR_SIZE') hdrsize = str2num(hdr_map('HDR_SIZE')); end
+hdr_map = read_header(headerFile, containers.Map());
 % Number of polarizations
-if isKey(hdr_map,'NPOL') npol = str2num(hdr_map('NPOL')); end
+if isKey(hdr_map, 'NPOL') npol = str2num(hdr_map('NPOL')); end
 % Centre frequency (MHz)
-if isKey(hdr_map,'FREQ') f0 = str2num(hdr_map('FREQ')); end
+if isKey(hdr_map, 'FREQ') f0 = str2num(hdr_map('FREQ')); end
 % Pulsar period
 if isKey(hdr_map, 'CALFREQ') T_pulsar = 1.0/str2num(hdr_map('CALFREQ')); end
 
+if isKey(hdr_map, 'BW') f_sample_out = str2num(hdr_map('BW')); end
+
+if isKey(hdr_map, 'NDIM')
+  nchan = hdr_map('NDIM');
+  switch nchan
+    case '1'
+      dformat = 'complextoreal';
+    case '2'
+      dformat = 'complextocomplex';
+  end
+end
+
+utcnow = datetime('now', 'TimeZone', 'UTC');
+utcnow = datestr(utcnow, 'yyyy-mm-dd-HH:MM:ss');
+hdr_map('UTC_START') = utcnow;
+
 % Set bandwidth
 % if isKey(hdr_map,'BW') f_sample_out = (-1)*str2num(hdr_map('BW')); end % Sampling frequency of output (MHz)
-
-% Multiplying factor going from input to output type
-%
-% NDIM is 1 for real output data and 2 for complex output data
-% if isKey(hdr_map,'NDIM')
-%     if str2num(hdr_map('NDIM'))==1 dformat='complextoreal';
-%     elseif str2num(hdr_map('NDIM'))==2 dformat='complextocomplex';
-%     else warning('NDIM in header file should be 1 or 2.')
-%     end
-% end
 
 %=============
 % Data which is not specified in the header
@@ -108,9 +111,8 @@ hdrtype = 'uint8'; % Data type for header ('uint8' = byte)
 ntype = 'single'; % Data type for each element in a pair ('single' = float)
 Nout = 2^20; %Length of each output vector
 nbins = 2^10; % Number of bins within a pulse period
-nseries = 30; % Number of FFT's to perform
-noise = 0.5;  % 0.0 for no noise, 1.0 for noise (max(S/N)=1)
 shift = 0; % performs an fftshift before the inverse FFT
+
 switch dformat
     case 'complextoreal'
         Nmul = 2;
@@ -129,9 +131,12 @@ DM = 2.64476; % pc/cm^3
 pcal = struct('a',T_pulsar,'b',0.0);% Pulsar period (s) and other params
 t0 = 0.0; % Absolute time (in seconds) of first time element
 
-Tout = 1/abs(f_sample_out)*1E-6; % Sample spacing of output (seconds)
-df = f_sample_out/Nmul; % Bandwidth/Nyquist frequency (MHz)
-Tin = Tout*Nmul; % Time spacing between input data elements
+Tout = 1/abs(f_sample_out)*1E-6; % Sample spacing, or interval of output (seconds)
+Tout = Tout / Nmul;
+% df = f_sample_out/Nmul; % Bandwidth/Nyquist frequency (MHz)
+df = f_sample_out;
+% Tin = Tout*Nmul; % Time spacing between input data elements
+Tin = Tout;
 Nin = Nout/Nmul; % Number of data elements in input time series
 Pmul = 1/Nmul; % Power multiplication factor for all but the DC channel
 
@@ -174,13 +179,10 @@ end
 trel = (0:Nin-1)*Tin;
 
 %===============
-current_branch = git_current_branch();
-fname = sprintf('data/simulated_pulsar.%s.noise_%.1f.dump', current_branch, noise);
+% current_branch = git_current_branch();
+fname = sprintf('data/simulated_pulsar.noise_%.1f.nseries_%d.ndim_%d.dump', noise, nseries, NperPol);
 % Open file for writing
-remove(hdr_map, 'NCHAN');
-% hdr_map('NCHAN') = '1';
-hdr_map('TSAMP') = num2str(Tout * 1e6);
-hdr_map('BW') = num2str(f_sample_out/Nmul);
+hdr_map('TSAMP') = num2str(Tout * 1e6); % this is sampling interval, in microseconds
 hdr_map('NDIM') = num2str(NperPol);
 
 fid = fopen(fname, 'w');
@@ -188,9 +190,12 @@ write_header(fid, hdr_map);
 fid = fopen(fname, 'a');
 %=============
 % Random vectors
+prev_bytes = 1;
 for ii = 1:nseries,
-    % Print loop number
-    fprintf('Loop # %i of %i\n', ii, nseries)
+    for b=1:prev_bytes
+      fprintf('\b');
+    end
+    prev_bytes = fprintf('\nLoop # %i of %i\n', ii, nseries);
 
     % Time vector
     if ii == 1,
