@@ -64,6 +64,9 @@ def load_dump_data(file_path, header_size=4096, float_dtype=np.float32):
 def filter(signal, filter_coef, filtered, downsample_by):
     """
     filter signal with filter_coef.
+
+    Implementation is a little strange from a numpy perspective, as numba
+    doesn't support 2d boolean array indexing, among other things.
     """
     rem = filter_coef.shape[0] % downsample_by
     if rem != 0:
@@ -100,6 +103,7 @@ def filter(signal, filter_coef, filtered, downsample_by):
         # filtered[i,:] = np.sum(signal_chunk[filter_idx] * filter_coeff_2d, axis=0)
         for j in range(downsample_by):
             signal_chunk_2d[:, j] = signal_chunk[filter_idx[:, j]]
+        # filtered[i, :] = np.dot(signal_chunk_2d, filter_coeff_2d)
         filtered[i, :]  = np.sum(signal_chunk_2d * filter_coeff_2d, axis=0)
 
     return filtered
@@ -371,91 +375,6 @@ class PFBChannelizer:
 
             # self.logger.debug(f"_pfb: total loop time: {time.time()-t0:.6f} seconds")
 
-    # @coroutine
-    # def _pfb(self, ipol, sink=None, experimental=False):
-    #     """
-    #     Assumes real input data
-    #     """
-    #     n_iter = 0
-    #     nchan = self._output_nchan
-    #     nchan_half = int(nchan/2)
-    #     nchan_half_idx = np.arange(nchan_half)
-    #     nchan_half_idx_exp = np.exp(2j*np.pi*nchan_half_idx/nchan)
-    #     down_sample_filter_elem = int(self._pfb_filter_coef.shape[0] / nchan)
-    #     # filter_idx = nchan * np.arange(down_sample_filter_elem)
-    #     # filter_idx = np.repeat(filter_idx, nchan).reshape((down_sample_filter_elem, nchan))
-    #     # filter_idx += np.arange(nchan)
-    #     filter_idx = np.arange(self._pfb_filter_coef.shape[0]).reshape((down_sample_filter_elem, nchan))
-    #     filter_coeff_2d = self._pfb_filter_coef[filter_idx]
-    #     # _pfb_input_mask is (2, 155)
-    #     # _pfb_output_mask is (nchan, 2)
-    #     while True:
-    #         x = (yield)
-    #         # t0 = time.time()
-    #         # using precomputed filter
-    #         self._pfb_output_mask[ipol,:] = np.sum(
-    #             self._pfb_input_mask[ipol,:][filter_idx] * filter_coeff_2d, axis=0)
-    #         # for c in range(self._output_nchan):
-    #         #     self._pfb_output_mask[ipol, c] = np.sum(
-    #         #         self._pfb_input_mask[ipol, c::nchan] * self._pfb_filter_coef[c::nchan]
-    #         #     )
-    #
-    #         # self.logger.debug(f"_pfb: Applying mask took {time.time()-t0:.6f} seconds")
-    #         # print("output mask: {}".format(self._pfb_output_mask[ipol,:]))
-    #         # shift input mask over by nchan samples
-    #         self._pfb_input_mask[ipol,nchan:] = self._pfb_input_mask[ipol,:-nchan]
-    #         # assign the first nchan samples to the flipped input
-    #         self._pfb_input_mask[ipol,:nchan] = x[::-1]
-    #         # print("input mask: {}".format(self._pfb_input_mask[ipol,:]))
-    #
-    #         # Make complex array by interweaving output mask
-    #         out = 2*nchan*nchan_half*np.fft.ifft(self._pfb_output_mask[ipol,:])
-    #         # c_out = self._pfb_output_mask[ipol,::2] + 1j*self._pfb_output_mask[ipol,1::2]
-    #         # # print("c_out: {}".format(c_out))
-    #         # # Do inverse FFT of complex output mask
-    #         # ifft_c_out = nchan * nchan_half * np.fft.ifft(c_out)
-    #         # # print("ifft_c_out: {}".format(ifft_c_out))
-    #         #
-    #         # out = np.zeros(nchan, dtype=self.complex_dtype)
-    #         #
-    #         # t0 = time.time()
-    #         # flipped_rolled_conj = np.conj(np.roll(ifft_c_out[::-1],1))
-    #         #
-    #         # out[:nchan_half] = (
-    #         #     0.5*((ifft_c_out+flipped_rolled_conj) -
-    #         #     1j*nchan_half_idx_exp *
-    #         #     (ifft_c_out-flipped_rolled_conj))
-    #         # )
-    #         #
-    #         # first_conj = np.conj(ifft_c_out[0])
-    #         #
-    #         # out[nchan_half] = 0.5*(
-    #         #     (ifft_c_out[0]+first_conj +
-    #         #     1j*(ifft_c_out[0]-first_conj))
-    #         # )
-    #         #
-    #         # out[nchan_half+1:] = np.conj((out[1:nchan_half])[::-1])
-    #
-    #         # r_out = self._pfb_output_mask[ipol,:]
-    #         # # print(c_out_real)
-    #         # ifft_r_out = np.fft.ifft(r_out)
-    #         # print(2*nchan*nchan_half*ifft_r_out)
-    #         # print(out)
-    #
-    #         # out_real = np.fft.ihfft(c_out_real, n=nchan)
-    #         # print(len(out_real))
-    #         # print(f"out_real: {out_real}")
-    #         # print(f"out: {out}")
-    #         # self.logger.debug(f"_pfb: rearranging took {time.time()-t0:.6f} seconds")
-    #
-    #         # print(f"out: {out}")
-    #         if sink is not None:
-    #             sink.send(out)
-    #
-    #
-    #         n_iter += 1
-    #         # self.logger.debug(f"_pfb: total loop time: {time.time()-t0:.6f} seconds")
-
     def channelize_conv(self, **kwargs):
         t_total = time.time()
 
@@ -486,63 +405,64 @@ class PFBChannelizer:
         nchan = self._output_nchan
 
         output_filtered = np.zeros(
-            (output_samples_per_pol_dim + 1, nchan), dtype=self.float_dtype)
+            (output_samples_per_pol_dim, nchan),
+            dtype=self.float_dtype
+        )
+
+        output_filtered_lfilter = output_filtered.copy()
+        output_filtered_convolve = output_filtered.copy()
         for p in range(self._input_npol):
             p_idx = self._output_ndim * p
             t0 = time.time()
-            filter(
+            output_filtered = filter(
                 input_samples[:,p].copy(),
                 self._pfb_filter_coef,
                 output_filtered,
                 nchan
             )
             self.logger.debug(f"channelize_conv: Call to filter took {time.time()-t0:.4f} seconds")
-            # for c in range(nchan):
-            #     filter = self._pfb_filter_coef[c::nchan]
-            #     if c == 0:
-            #         input_chunk = input_samples[::nchan, p]
-            #         filtered = scipy.signal.lfilter(filter, [1.0], input_chunk)
-            #         # filtered = np.append(filtered, 0)
-            #     else:
-            #         input_chunk = input_samples[(nchan-c)::nchan, p]
-            #         filtered = scipy.signal.lfilter(filter, [1.0], input_chunk)
-            #         # filtered = np.insert(filtered, 0, 0)
-            #     # input_chunk = input_samples[c::nchan, p]
-            #     # filtered = scipy.signal.lfilter(filter, [1.0], input_chunk)
-            #     filtered = np.insert(filtered, 0, 0)
-            #     filtered = filtered.astype(self.float_dtype)
+            input_samples_padded = np.append(np.zeros(nchan, dtype=self.float_dtype), input_samples[:, p])
 
-                # print(f"{time.time() - t0}")
-                #
-                # fig, axes = plt.subplots(4, 1)
-                # for ax in axes:
-                #     ax.grid(True)
-                # axes[0].plot(filtered_c)
-                # axes[1].plot(filtered)
-                # axes[2].plot(scipy.signal.fftconvolve(filtered_c, filtered[::-1], mode="same"))
-                # axes[3].plot((filtered_c - filtered)**2)
-                # plt.show()
-                #
-                # print(filtered_c.shape)
-                # print(filtered.shape)
-                # print(input_chunk.shape)
-                # print(np.allclose(filtered_c, filtered))
-                # output_filtered[:,c] = filtered
+            t0 = time.time()
+            for c in range(nchan):
+                filter_decimated = self._pfb_filter_coef[c::nchan]
+                # if c == 0:
+                #     input_decimated = input_samples_padded[::nchan]
+                #     filtered = scipy.signal.lfilter(filter_decimated, [1.0], input_decimated)
+                #     # filtered = np.append(filtered, 0)
+                # else:
+                #     input_decimated = input_samples_padded[(nchan-c)::nchan, p]
+                #     filtered = scipy.signal.lfilter(filter_decimated, [1.0], input_decimated)
+                    # filtered = np.insert(filtered, 0, 0)
+                input_decimated = input_samples_padded[c::nchan]
+                filtered = scipy.signal.lfilter(filter_decimated, 1.0, input_decimated).astype(self.float_dtype)
+                output_filtered_lfilter[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
 
-                # ifft_filtered = nchan**2 * np.fft.ifft(filtered)
-                # print(np.mean(np.real(filtered)))
-                # print(np.mean(np.imag(filtered)))
-                # filter = filter_coef_padded[c::nchan]
-                # filtered = np.fft.ifft(np.fft.fft(filter) * np.fft.fft(input_chunk))
-                # self.output_data[:,c,p_idx] = np.real(ifft_filtered)
-                # self.output_data[:,c,p_idx+1] = np.imag(ifft_filtered)
+                filtered = np.convolve(input_decimated, filter_decimated)
+                output_filtered_convolve[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
+
+            self.logger.debug(f"channelize_conv: Calls to scipy.signal.lfilter took {time.time()-t0:.4f} seconds")
+
+            for j in range(output_samples_per_pol_dim):
+                allclose = np.allclose(output_filtered[j,:], output_filtered_lfilter[j,:])
+                if not allclose:
+                    input(f"{j} >> ")
             # for j in range(output_samples_per_pol_dim):
             #     print(output_filtered[j,:])
+            #     print(output_filtered_lfilter[j,:])
+            #     print(output_filtered_convolve[j,:])
+            #     print(np.allclose(output_filtered[j,:], output_filtered_lfilter[j,:]))
+            #     # print((output_filtered[j,:] - output_filtered_lfilter[j,:])**2)
             #     input(">> ")
-            output_filtered_fft = nchan**2 * np.fft.ifft(output_filtered, n=nchan, axis=1)[:-1,:]
-            # for j in range(output_samples_per_pol_dim):
-            #     print(output_filtered_fft[j,:])
-            #     input(">> ")
+
+
+            output_filtered_fft = nchan**2 * np.fft.ifft(output_filtered, n=nchan, axis=1)
+            output_filtered_lfilter_fft = nchan**2 * np.fft.ifft(output_filtered_lfilter, n=nchan, axis=1)
+            print(np.allclose(output_filtered_fft, output_filtered_lfilter_fft))
+            for j in range(output_samples_per_pol_dim):
+                allclose = np.allclose(output_filtered_fft[j,:], output_filtered_lfilter_fft[j,:])
+                if not allclose:
+                    input(f"{j} >> ")
             self.output_data[:,:,p_idx] = np.real(output_filtered_fft)
             self.output_data[:,:,p_idx+1] = np.imag(output_filtered_fft)
 
