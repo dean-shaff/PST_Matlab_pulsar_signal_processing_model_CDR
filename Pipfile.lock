@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "54aae9591634ab1b2febbcd0d0ef3a0b290f05554947792f415d5524231d4728"
+            "sha256": "ee51c4244e138d8430daf6167cb60eeb0e29fcf89b73a9b68c44d2ee2c00ca7a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -93,6 +93,23 @@
             ],
             "index": "pypi",
             "version": "==2.8.0"
+        },
+        "icc-rt": {
+            "hashes": [
+                "sha256:4b7522cf02d71d418dee88d1e42a52f8513479f392ac6234b8d09329cb551e03",
+                "sha256:9d2ec116a62800b8052498ace1cb3064a32ed61ceb4f7d916fa90de52f157220",
+                "sha256:e812350874c4d9801a06f2af1530e38832e7402f888b5f0f351cbd69a7e37375"
+            ],
+            "index": "pypi",
+            "version": "==2019.0"
+        },
+        "intel-openmp": {
+            "hashes": [
+                "sha256:726f1a321596bbc23d20d41135dd7aaf0e07eb06b43f3985f4dcf780ddba1bdb",
+                "sha256:a63e10d0da5430f0649f3a900854643a1d089166fde9910890960be72f586508",
+                "sha256:cf200f136a7b582254179a0452aaca580c8b19471b3ef2efd374df90c33cd927"
+            ],
+            "version": "==2019.0"
         },
         "ipykernel": {
             "hashes": [
