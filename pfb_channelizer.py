@@ -421,7 +421,7 @@ class PFBChannelizer:
 
             # self.logger.debug(f"_pfb: total loop time: {time.time()-t0:.6f} seconds")
 
-    def channelize_conv(self, **kwargs):
+    def _channelize_fast_filter(self, **kwargs):
         t_total = time.time()
 
         if self.input_data is None:
@@ -435,8 +435,10 @@ class PFBChannelizer:
 
         input_samples = self.input_data[:self._input_samples]
 
-        input_samples_per_pol_dim = int(self._input_samples / (self._input_npol * self._input_ndim))
-        output_samples_per_pol_dim = int(self._output_samples / (self._output_npol * self._input_ndim))
+        input_samples_per_pol_dim = int(
+            self._input_samples / (self._input_npol*self._input_ndim))
+        output_samples_per_pol_dim = int(
+            self._output_samples / (self._output_npol*self._input_ndim))
 
         if self._input_ndim > 1:
             input_samples = input_samples.reshape(
@@ -456,8 +458,7 @@ class PFBChannelizer:
             (output_samples_per_pol_dim, nchan),
             dtype=input_samples.dtype
         )
-        # print(output_filtered.dtype)
-        # return
+
         # output_filtered_lfilter = output_filtered.copy()
         # output_filtered_convolve = output_filtered.copy()
         for p in range(self._input_npol):
@@ -470,7 +471,7 @@ class PFBChannelizer:
                 nchan
             )
             self.logger.debug(
-                (f"channelize_conv: "
+                (f"_channelize_fast_filter: "
                  f"Call to filter took {time.time()-t0:.4f} seconds"))
 
             # input_samples_padded = np.append(
@@ -496,7 +497,7 @@ class PFBChannelizer:
             #     filtered = np.convolve(input_decimated, filter_decimated)
             #     output_filtered_convolve[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
             #
-            # self.logger.debug(f"channelize_conv: Calls to scipy.signal.lfilter took {time.time()-t0:.4f} seconds")
+            # self.logger.debug(f""_channelize_fast_filter: Calls to scipy.signal.lfilter took {time.time()-t0:.4f} seconds")
 
             # for j in range(output_samples_per_pol_dim):
             #     print(output_filtered[j,:])
@@ -527,10 +528,10 @@ class PFBChannelizer:
         self.output_file_path = ".".join(split)
         self._dump_data(self.output_header, self.output_data, **kwargs)
         self.logger.debug(
-            (f"channelize_conv: "
+            (f"_channelize_fast_filter: "
              f"Took {time.time() - t_total:.4f} seconds to channelize"))
 
-    def channelize(self, diagnostic_plots=False, **kwargs):
+    def _channelize_slow_filter(self, diagnostic_plots=False, **kwargs):
 
         t_total = time.time()
 
@@ -545,7 +546,8 @@ class PFBChannelizer:
         if diagnostic_plots:
             plt.ion()
             fig_input, axes_input = plt.subplots(2, 2)
-            fig_output, axes_output = plt.subplots(self._output_nchan, int(self._input_npol*self._output_ndim))
+            fig_output, axes_output = plt.subplots(
+                self._output_nchan, int(self._input_npol*self._output_ndim))
             # fig_input.tight_layout()
             # fig_output.tight_layout()
 
@@ -558,21 +560,30 @@ class PFBChannelizer:
 
         input_samples = self.input_data[:self._input_samples]
 
-        input_samples_per_pol_dim = int(self._input_samples / (self._input_npol * self._input_ndim))
-        output_samples_per_pol_dim = int(self._output_samples / (self._output_npol * self._input_ndim))
+        input_samples_per_pol_dim = int(
+            self._input_samples / (self._input_npol*self._input_ndim))
+        output_samples_per_pol_dim = int(
+            self._output_samples / (self._output_npol*self._input_ndim))
 
-        self.logger.debug(f"channelize: input_samples_per_pol_dim: {input_samples_per_pol_dim}")
-        self.logger.debug(f"channelize: output_samples_per_pol_dim: {output_samples_per_pol_dim}")
+        self.logger.debug(
+            (f"_channelize_slow_filter: "
+             f"input_samples_per_pol_dim: {input_samples_per_pol_dim}"))
+
+        self.logger.debug(
+            (f"_channelize_slow_filter: "
+             f"output_samples_per_pol_dim: {output_samples_per_pol_dim}"))
 
         if self._input_ndim > 1:
-            input_samples = input_samples.reshape((input_samples_per_pol_dim*self._input_npol, self._input_ndim))
-            input_samples = input_samples[:,0] + 1j*input_samples[:,1]
+            input_samples = input_samples.reshape(
+                (input_samples_per_pol_dim*self._input_npol, self._input_ndim))
+            input_samples = input_samples[:, 0] + 1j*input_samples[:, 1]
 
-        input_samples = input_samples.reshape((input_samples_per_pol_dim, self._input_npol))
+        input_samples = input_samples.reshape(
+            (input_samples_per_pol_dim, self._input_npol))
 
         # do any downsampling necessary for conversion from real to complex data.
         if int(self._ndim_ratio) != 1:
-            input_samples = input_samples[::int(self._ndim_ratio),:]
+            input_samples = input_samples[::int(self._ndim_ratio), :]
         p_idx = None
         chunk_size = 5*int(1e4)
         for p in range(self._input_npol):
@@ -587,73 +598,27 @@ class PFBChannelizer:
                 self.output_data[j, :, p_idx + 1] = np.imag(sink.val)
                 if (j % chunk_size) == 0 and j > 0:
                     self.logger.debug(
-                        (f"channelize: processing samples "
-                         f"{j - chunk_size} - {j} / {output_samples_per_pol_dim} "
+                        (f"_channelize_slow_filter: processing samples "
+                         f"{j - chunk_size} - {j} / "
+                         f"{output_samples_per_pol_dim} "
                          f"samples took {time.time()-t0:.4f} seconds"))
                     t0 = time.time()
 
-            self.logger.debug(f"channelize: pol {p} took {time.time()-tpol:.4f} seconds")
-        # for i in range(self._n_series):
-        #     t0 = time.time()
-        #     input_increment = int(self._input_npol * self._input_ndim * self._input_samples)
-        #     input_chunk = self.input_data[i*input_increment:(i+1)*input_increment]
-        #
-        #     if self._input_ndim == 2:
-        #         input_chunk = input_chunk.reshape((self._input_samples*self._input_npol, self._input_ndim))
-        #         input_chunk = input_chunk[:,0] + 1j*input_chunk[:,1]
-        #
-        #     input_chunk = input_chunk.reshape((self._input_samples, self._input_npol))
-        #
-        #     # do any downsampling necessary for conversion from real to complex data.
-        #     if int(self._ndim_ratio) != 1:
-        #         input_chunk = input_chunk[::int(self._ndim_ratio),:]
-        #
-        #
-        #     for p in range(self._input_npol):
-        #         coro = pfb_coro[p]
-        #         sink = pfb_consumer[p]
-        #         for j in range(self._output_samples):
-        #             coro.send(input_chunk[norm_chan*j:norm_chan*(j+1),p])
-        #             output_chunk[j,:,p] = sink.val.copy()
-        #             # input(">> ")
-        #
-        #     s = self._output_samples*i
-        #     e = self._output_samples*(i+1)
-        #     self.output_data[s:e,:,0] = np.real(output_chunk[:,:,0])
-        #     self.output_data[s:e,:,1] = np.imag(output_chunk[:,:,0])
-        #     self.output_data[s:e,:,2] = np.real(output_chunk[:,:,1])
-        #     self.output_data[s:e,:,3] = np.imag(output_chunk[:,:,1])
-        #     self.logger.debug(f"channelize: Loop {i}/{self._n_series} took {time.time() - t0:.4f} seconds")
-        #
-        #     if diagnostic_plots:
-        #         axes_input[0,0].plot(np.real(input_chunk[:, 0]))
-        #         axes_input[0,0].set_title("Pol 1 Real")
-        #         axes_input[1,0].plot(np.imag(input_chunk[:, 0]))
-        #         axes_input[1,0].set_title("Pol 1 Imag")
-        #         axes_input[0,1].plot(np.real(input_chunk[:, 1]))
-        #         axes_input[0,1].set_title("Pol 2 Real")
-        #         axes_input[1,1].plot(np.imag(input_chunk[:, 1]))
-        #         axes_input[1,1].set_title("Pol 2 Imag")
-        #
-        #         for p in range(self._input_npol):
-        #             for c in range(self._output_nchan):
-        #                 for z in range(self._output_ndim):
-        #                     z_name = "Real"
-        #                     if z == 1:
-        #                         z_name = "Imag"
-        #                     idx = z + p*self._output_ndim
-        #                     ax = axes_output[c, idx]
-        #                     plt_data = self.output_data[idx,c,s:e]
-        #                     ax.plot(np.arange(len(plt_data)), plt_data)
-        #                     ax.grid(True)
-        #                     ax.set_title(f"Output {z_name}, pol {p}, channel {c}")
-        #                     for item in [ax.title, ax.xaxis.label, ax.yaxis.label] + ax.get_xticklabels() + ax.get_yticklabels():
-        #                         item.set_fontsize(5)
-        #         input(">> ")
-        #
+            self.logger.debug(
+                (f"_channelize_slow_filter: "
+                 f"pol {p} took {time.time()-tpol:.4f} seconds"))
+
         self._dump_data(self.output_header, self.output_data, **kwargs)
         self.logger.debug(
-            f"channelize: Took {time.time() - t_total:.4f} seconds to channelize")
+            (f"_channelize_slow_filter: "
+             f"Took {time.time() - t_total:.4f} seconds to channelize"))
+
+    def channelize(self, **kwargs):
+
+        if self.oversampled:
+            self._channelize_slow_filter(**kwargs)
+        else:
+            self._channelize_fast_filter(**kwargs)
 
 
 def compare_matlab_py(*fnames, **kwargs):
@@ -687,7 +652,6 @@ def compare_matlab_py(*fnames, **kwargs):
         print(comp_dat[0][argmax], comp_dat[1][argmax])
         # for i in range(3):
         #     axes[i].set_xlim([argmax-100, argmax+100])
-
         print(
             f"{np.sum(diff_squared == 0.0)}/{diff_squared.shape[0]} are zero.")
     else:
@@ -716,7 +680,7 @@ def get_most_recent_data_file(directory,
 def create_parser():
 
     parser = argparse.ArgumentParser(
-        description="Channelize simulated pulsar data")
+        description="_channelize_slow_filter simulated pulsar data")
 
     parser.add_argument("-i", "--input-file",
                         dest="input_file_path",
@@ -753,8 +717,8 @@ if __name__ == "__main__":
         parsed.input_file_path, os
     )
 
-    # channelizer.channelize()
-    channelizer.channelize_conv()
+    channelizer.channelize()
+    # channelizer.channelize_conv()
 
     if parsed.compare != "":
         compare_matlab_py(
