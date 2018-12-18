@@ -62,14 +62,15 @@ def load_dump_data(file_path, header_size=4096, float_dtype=np.float32):
 
 
 # @numba.njit
-@numba.njit(
-    numba.float32[:, :](
-        numba.float32[:],
-        numba.float32[:],
-        numba.float32[:, :],
-        numba.int64
-    )
-)
+# @numba.njit(
+#     numba.float32[:, :](
+#         numba.float32[:],
+#         numba.float32[:],
+#         numba.float32[:, :],
+#         numba.int64
+#     )
+# )
+@numba.njit
 def filter(signal, filter_coef, filtered, downsample_by):
     """
     filter signal with filter_coef.
@@ -78,10 +79,21 @@ def filter(signal, filter_coef, filtered, downsample_by):
     doesn't support 2d boolean array indexing.
     """
     init_filter_size = filter_coef.shape[0]
+    filter_dtype = filter_coef.dtype
+    signal_dtype = signal.dtype
+    is_real = True
+    if signal_dtype is np.complex64:
+        is_real = False
+    # is_real = True
+    # if np.issubdtype(signal_dtype, np.complex):
+    #     is_real = False
+
     rem = init_filter_size % downsample_by
     if rem != 0:
         filter_coef_padded = np.zeros(
-            (init_filter_size + downsample_by - rem), dtype=np.float32)
+            (init_filter_size + downsample_by - rem),
+            dtype=filter_dtype
+        )
         filter_coef_padded[init_filter_size:] = filter_coef
         filter_coef = filter_coef_padded
 
@@ -91,11 +103,14 @@ def filter(signal, filter_coef, filtered, downsample_by):
     filter_idx = np.arange(window_size).reshape(
         (down_sample_filter_elem, downsample_by))
     # filter_coeff_2d = filter_coef[filter_idx]
-    filter_coeff_2d = np.zeros(filter_idx.shape, dtype=filter_coef.dtype)
+    filter_coeff_2d = np.zeros(filter_idx.shape, dtype=filter_dtype)
     for i in range(downsample_by):
         filter_coeff_2d[:, i] = filter_coef[filter_idx[:, i]]
 
-    signal_padded = np.zeros((window_size + signal.shape[0]), dtype=np.float32)
+    signal_padded = np.zeros(
+        (window_size + signal.shape[0]),
+        dtype=signal_dtype
+    )
     signal_padded[window_size:] = signal
 
     # if filtered is None:
@@ -107,7 +122,7 @@ def filter(signal, filter_coef, filtered, downsample_by):
     # else:
 
     down_sample_signal_elem = filtered.shape[0]
-    signal_chunk_2d = np.zeros(filter_idx.shape, dtype=signal_padded.dtype)
+    signal_chunk_2d = np.zeros(filter_idx.shape, dtype=signal_dtype)
 
     for i in range(down_sample_signal_elem):
         idx = i*downsample_by
@@ -115,8 +130,14 @@ def filter(signal, filter_coef, filtered, downsample_by):
         # filtered[i,:] = np.sum(signal_chunk[filter_idx] * filter_coeff_2d, axis=0)
         for j in range(downsample_by):
             signal_chunk_2d[:, j] = signal_chunk[filter_idx[:, j]]
-        # filtered[i, :] = np.dot(signal_chunk_2d, filter_coeff_2d)
-        filtered[i, :]  = np.sum(signal_chunk_2d * filter_coeff_2d, axis=0)
+
+        if is_real:
+            filtered[i, :] = np.sum(signal_chunk_2d * filter_coeff_2d, axis=0)
+        else:
+            filtered[i, :] = (
+                np.sum(signal_chunk_2d.real * filter_coeff_2d, axis=0) +
+                1j*np.sum(signal_chunk_2d.imag * filter_coeff_2d, axis=0)
+            )
 
     return filtered
 
@@ -125,12 +146,14 @@ class PFBChannelizer:
 
     header_size = 4096
     default_input_samples = 2**14
-    pfb_fir_config_file_path = os.path.join(config_dir, "OS_Prototype_FIR_8.mat")
+    pfb_fir_config_file_path = os.path.join(
+        config_dir, "OS_Prototype_FIR_8.mat")
     complex_dtype = np.complex64
     float_dtype = np.float32
 
-
-    def __init__(self, input_file_path, oversampling_factor, output_channels=8, output_file_path=None):
+    def __init__(self, input_file_path, oversampling_factor,
+                 output_channels=8,
+                 output_file_path=None):
         self.logger = module_logger.getChild("PFBChannelizer")
         self.input_file_path = input_file_path
         self.oversampling_factor = oversampling_factor
@@ -142,7 +165,8 @@ class PFBChannelizer:
             os_text = "cs"
             if self.oversampled:
                 os_text = "os"
-            output_file_path = self.input_file_path.replace("simulated_pulsar", "py_channelized")
+            output_file_path = self.input_file_path.replace(
+                "simulated_pulsar", "py_channelized")
             split = output_file_path.split(".")
             split.insert(-1, os_text)
             output_file_path = ".".join(split)
@@ -165,13 +189,13 @@ class PFBChannelizer:
 
         self._n_series = None
         self._ndim_ratio = Rational(1, 1)
-        self._input_samples = self.default_input_samples # n_in changes due to oversampling
+        self._input_samples = self.default_input_samples  # n_in changes due to oversampling
         self._output_samples = 0
 
         self._pfb_config = None
         self._pfb_filter_coef = None
 
-    def _load_pfb_config(self, diagnostic_plots=False):
+    def _load_pfb_config(self, diagnostic_plots=False, pad=True):
 
         t0 = time.time()
         self._pfb_config = scipy.io.loadmat(self.pfb_fir_config_file_path)
@@ -186,9 +210,11 @@ class PFBChannelizer:
             input(">> ")
 
         rem = self._pfb_filter_coef.shape[0] % self._output_nchan
-        if rem != 0:
+        if rem != 0 and pad:
             self._pfb_filter_coef = np.append(
-                self._pfb_filter_coef, np.zeros(self._output_nchan - rem, dtype=self.float_dtype))
+                self._pfb_filter_coef,
+                np.zeros(self._output_nchan - rem, dtype=self.float_dtype)
+            )
 
         input_mask_dtype = self.float_dtype
         if self._input_ndim == 2:
@@ -200,7 +226,10 @@ class PFBChannelizer:
         )
 
         self._pfb_output_mask = np.zeros(
-            (self._output_npol, self._output_nchan), dtype=self.float_dtype)
+            (self._output_npol, self._output_nchan),
+            dtype=self.float_dtype
+        )
+
         self.logger.debug(
             (f"_load_pfb_config: self._pfb_filter_coef.dtype: "
              f" {self._pfb_filter_coef.dtype}"))
@@ -220,7 +249,8 @@ class PFBChannelizer:
             float_dtype=self.float_dtype
         )
         self.logger.debug(
-            f"_load_input_data: Took {time.time()-t0:.4f} seconds to load input data")
+            (f"_load_input_data: "
+             f"Took {time.time()-t0:.4f} seconds to load input data"))
 
         self.input_header = process_header(header)
         self.input_data = data
@@ -233,7 +263,8 @@ class PFBChannelizer:
     def _init_output_data(self):
 
         if self.input_header is None:
-            raise RuntimeError("Need to load input header before initializing output data")
+            raise RuntimeError(
+                "Need to load input header before initializing output data")
 
         ndat_input = self.input_data.shape[0]
         norm_chan = self.oversampling_factor.normalize(self._output_nchan)
@@ -241,9 +272,12 @@ class PFBChannelizer:
         self._output_samples = int(ndat_input / (norm_chan * int_ndim_ratio))
         self._input_samples = self._output_samples * norm_chan * int_ndim_ratio
 
-        self.logger.debug(f"_init_output_data: ndat_input: {ndat_input}")
-        self.logger.debug(f"_init_output_data: self._output_samples: {self._output_samples}")
-        self.logger.debug(f"_init_output_data: self._input_samples: {self._input_samples}")
+        self.logger.debug(
+            f"_init_output_data: ndat_input: {ndat_input}")
+        self.logger.debug(
+            f"_init_output_data: self._output_samples: {self._output_samples}")
+        self.logger.debug(
+            f"_init_output_data: self._input_samples: {self._input_samples}")
 
         self.output_data = np.zeros((
             int(self._output_samples / (self._input_npol * self._input_ndim)),
@@ -266,7 +300,8 @@ class PFBChannelizer:
     def _init_output_header(self):
 
         if self.input_header is None:
-            raise RuntimeError("Need to load input header before initializing output header")
+            raise RuntimeError(
+                "Need to load input header before initializing output header")
 
         os_factor = self.oversampling_factor
 
@@ -313,7 +348,6 @@ class PFBChannelizer:
         self.logger.debug(
             f"_dump_data: Took {time.time() - t0:.4f} seconds to dump data")
 
-
     @coroutine
     def _pfb(self, ipol, sink=None):
         """
@@ -331,7 +365,8 @@ class PFBChannelizer:
         # nchan_half_idx = np.arange(nchan_half)
         # nchan_half_idx_exp = np.exp(2j*np.pi*nchan_half_idx/nchan)
         down_sample_filter_elem = int(self._pfb_filter_coef.shape[0] / nchan)
-        filter_idx = np.arange(self._pfb_filter_coef.shape[0]).reshape((down_sample_filter_elem, nchan))
+        filter_idx = np.arange(self._pfb_filter_coef.shape[0]).reshape(
+            (down_sample_filter_elem, nchan))
         filter_coeff_2d = self._pfb_filter_coef[filter_idx]
 
         nu = self.oversampling_factor.numerator
@@ -405,8 +440,9 @@ class PFBChannelizer:
         output_samples_per_pol_dim = int(self._output_samples / (self._output_npol * self._input_ndim))
 
         if self._input_ndim > 1:
-            input_samples = input_samples.reshape((input_samples_per_pol_dim*self._input_npol, self._input_ndim))
-            input_samples = input_samples[:,0] + 1j*input_samples[:,1]
+            input_samples = input_samples.reshape(
+                (input_samples_per_pol_dim*self._input_npol, self._input_ndim))
+            input_samples = input_samples[:, 0] + 1j*input_samples[:, 1]
 
         input_samples = input_samples.reshape(
             (input_samples_per_pol_dim, self._input_npol))
@@ -419,46 +455,52 @@ class PFBChannelizer:
 
         output_filtered = np.zeros(
             (output_samples_per_pol_dim, nchan),
-            dtype=self.float_dtype
+            dtype=input_samples.dtype
         )
 
-        output_filtered_lfilter = output_filtered.copy()
-        output_filtered_convolve = output_filtered.copy()
+        # output_filtered_lfilter = output_filtered.copy()
+        # output_filtered_convolve = output_filtered.copy()
         for p in range(self._input_npol):
             p_idx = self._output_ndim * p
             t0 = time.time()
             output_filtered = filter(
-                input_samples[:,p].copy(),
+                input_samples[:, p].copy(),
                 self._pfb_filter_coef,
                 output_filtered,
                 nchan
             )
-            self.logger.debug(f"channelize_conv: Call to filter took {time.time()-t0:.4f} seconds")
-            input_samples_padded = np.append(np.zeros(nchan, dtype=self.float_dtype), input_samples[:, p])
+            self.logger.debug(
+                (f"channelize_conv: "
+                 f"Call to filter took {time.time()-t0:.4f} seconds"))
 
-            t0 = time.time()
-            for c in range(nchan):
-                filter_decimated = self._pfb_filter_coef[c::nchan]
-                # if c == 0:
-                #     input_decimated = input_samples_padded[::nchan]
-                #     filtered = scipy.signal.lfilter(filter_decimated, [1.0], input_decimated)
-                #     # filtered = np.append(filtered, 0)
-                # else:
-                #     input_decimated = input_samples_padded[(nchan-c)::nchan, p]
-                #     filtered = scipy.signal.lfilter(filter_decimated, [1.0], input_decimated)
-                    # filtered = np.insert(filtered, 0, 0)
-                input_decimated = input_samples_padded[c::nchan]
-                filtered = scipy.signal.lfilter(filter_decimated, 1.0, input_decimated).astype(self.float_dtype)
-                output_filtered_lfilter[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
+            input_samples_padded = np.append(
+                np.zeros(nchan, dtype=self.float_dtype),
+                input_samples[:, p]
+            )
 
-                filtered = np.convolve(input_decimated, filter_decimated)
-                output_filtered_convolve[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
+            # t0 = time.time()
+            # for c in range(nchan):
+            #     filter_decimated = self._pfb_filter_coef[c::nchan]
+            #     # if c == 0:
+            #     #     input_decimated = input_samples_padded[::nchan]
+            #     #     filtered = scipy.signal.lfilter(filter_decimated, [1.0], input_decimated)
+            #     #     # filtered = np.append(filtered, 0)
+            #     # else:
+            #     #     input_decimated = input_samples_padded[(nchan-c)::nchan, p]
+            #     #     filtered = scipy.signal.lfilter(filter_decimated, [1.0], input_decimated)
+            #         # filtered = np.insert(filtered, 0, 0)
+            #     input_decimated = input_samples_padded[c::nchan]
+            #     filtered = scipy.signal.lfilter(filter_decimated, 1.0, input_decimated).astype(self.float_dtype)
+            #     output_filtered_lfilter[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
+            #
+            #     filtered = np.convolve(input_decimated, filter_decimated)
+            #     output_filtered_convolve[:output_samples_per_pol_dim,c] = filtered[:output_samples_per_pol_dim]
+            #
+            # self.logger.debug(f"channelize_conv: Calls to scipy.signal.lfilter took {time.time()-t0:.4f} seconds")
 
-            self.logger.debug(f"channelize_conv: Calls to scipy.signal.lfilter took {time.time()-t0:.4f} seconds")
-
-            for j in range(output_samples_per_pol_dim):
-                print(output_filtered[j,:])
-                input(f"{j} >> ")
+            # for j in range(output_samples_per_pol_dim):
+            #     print(output_filtered[j,:])
+            #     input(f"{j} >> ")
                 # allclose = np.allclose(output_filtered[j,:], output_filtered_lfilter[j,:])
                 # if not allclose:
                 #     input(f"{j} >> ")
@@ -472,12 +514,12 @@ class PFBChannelizer:
 
 
             output_filtered_fft = nchan**2 * np.fft.ifft(output_filtered, n=nchan, axis=1)
-            output_filtered_lfilter_fft = nchan**2 * np.fft.ifft(output_filtered_lfilter, n=nchan, axis=1)
-            print(np.allclose(output_filtered_fft, output_filtered_lfilter_fft))
-            for j in range(output_samples_per_pol_dim):
-                allclose = np.allclose(output_filtered_fft[j,:], output_filtered_lfilter_fft[j,:])
-                if not allclose:
-                    input(f"{j} >> ")
+            # # output_filtered_lfilter_fft = nchan**2 * np.fft.ifft(output_filtered_lfilter, n=nchan, axis=1)
+            # print(np.allclose(output_filtered_fft, output_filtered_lfilter_fft))
+            # for j in range(output_samples_per_pol_dim):
+            #     allclose = np.allclose(output_filtered_fft[j,:], output_filtered_lfilter_fft[j,:])
+            #     if not allclose:
+            #         input(f"{j} >> ")
             self.output_data[:,:,p_idx] = np.real(output_filtered_fft)
             self.output_data[:,:,p_idx+1] = np.imag(output_filtered_fft)
 
@@ -656,7 +698,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
     # input_file_name = "simulated_pulsar.noise_0.0.nseries_1.ndim_1.dump"
-    input_file_name = "simulated_pulsar.noise_0.0.nseries_5.ndim_1.dump"
+    input_file_name = "simulated_pulsar.noise_0.0.nseries_5.ndim_2.dump"
     # input_file_name = "simulated_pulsar.noise_0.0.nseries_5.ndim_2.dump"
     input_file_path = os.path.join(data_dir, input_file_name)
     # os = Rational(8,7)
@@ -669,13 +711,14 @@ if __name__ == "__main__":
     # channelizer._init_output_header()
     # channelizer._dump_data(channelizer.output_header, channelizer.output_data)
     # channelizer.channelize()
-    # channelizer.channelize_conv()
+    channelizer.channelize_conv()
 
     compare_matlab_py(
+        channelizer.output_file_path,
         # "data/py_channelized.conv.noise_0.0.nseries_5.ndim_1.cs.dump",
-        "data/py_channelized.noise_0.0.nseries_5.ndim_1.cs.dump",
+        # "data/py_channelized.noise_0.0.nseries_5.ndim_1.cs.dump",
         # "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.cs.dump",
-        "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.cs.dump",
+        "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_2.cs.dump",
         # "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.cs.dump.backup",
         rtol=1e-6,
         atol=1e-6
