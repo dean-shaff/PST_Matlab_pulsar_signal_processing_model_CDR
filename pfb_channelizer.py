@@ -1,7 +1,6 @@
 import os
 import time
 import logging
-import multiprocessing
 
 import numba
 import numpy as np
@@ -17,12 +16,14 @@ data_dir = os.path.join(current_dir, "data")
 
 module_logger = logging.getLogger(__name__)
 
+
 def coroutine(func):
     def start(*args, **kwargs):
         coro = func(*args, **kwargs)
         next(coro)
         return coro
     return start
+
 
 class Consumer:
 
@@ -44,7 +45,7 @@ def process_header(header_arr):
             key, val = line.split()[:2]
             try:
                 val = float(val)
-            except ValueError as err:
+            except ValueError:
                 pass
             header[key] = val
     return header
@@ -59,30 +60,41 @@ def load_dump_data(file_path, header_size=4096, float_dtype=np.float32):
             buffer, dtype=float_dtype, offset=header_size)
     return [header, data]
 
+
 # @numba.njit
-@numba.njit(numba.float32[:,:](numba.float32[:], numba.float32[:], numba.float32[:,:], numba.int64))
+@numba.njit(
+    numba.float32[:, :](
+        numba.float32[:],
+        numba.float32[:],
+        numba.float32[:, :],
+        numba.int64
+    )
+)
 def filter(signal, filter_coef, filtered, downsample_by):
     """
     filter signal with filter_coef.
 
     Implementation is a little strange from a numpy perspective, as numba
-    doesn't support 2d boolean array indexing, among other things.
+    doesn't support 2d boolean array indexing.
     """
-    rem = filter_coef.shape[0] % downsample_by
+    init_filter_size = filter_coef.shape[0]
+    rem = init_filter_size % downsample_by
     if rem != 0:
-        filter_coef_padded = np.zeros((filter_coef.shape[0] + downsample_by - rem), dtype=np.float32)
-        filter_coef_padded[filter_coef.shape[0]:] = filter_coef
+        filter_coef_padded = np.zeros(
+            (init_filter_size + downsample_by - rem), dtype=np.float32)
+        filter_coef_padded[init_filter_size:] = filter_coef
         filter_coef = filter_coef_padded
 
-    down_sample_filter_elem = int(filter_coef.shape[0] / downsample_by)
-    filter_idx = np.arange(filter_coef.shape[0]).reshape(
+    window_size = filter_coef.shape[0]
+
+    down_sample_filter_elem = int(window_size / downsample_by)
+    filter_idx = np.arange(window_size).reshape(
         (down_sample_filter_elem, downsample_by))
     # filter_coeff_2d = filter_coef[filter_idx]
     filter_coeff_2d = np.zeros(filter_idx.shape, dtype=filter_coef.dtype)
     for i in range(downsample_by):
-        filter_coeff_2d[:,i] = filter_coef[filter_idx[:, i]]
+        filter_coeff_2d[:, i] = filter_coef[filter_idx[:, i]]
 
-    window_size = filter_coef.shape[0]
     signal_padded = np.zeros((window_size + signal.shape[0]), dtype=np.float32)
     signal_padded[window_size:] = signal
 
@@ -396,11 +408,12 @@ class PFBChannelizer:
             input_samples = input_samples.reshape((input_samples_per_pol_dim*self._input_npol, self._input_ndim))
             input_samples = input_samples[:,0] + 1j*input_samples[:,1]
 
-        input_samples = input_samples.reshape((input_samples_per_pol_dim, self._input_npol))
+        input_samples = input_samples.reshape(
+            (input_samples_per_pol_dim, self._input_npol))
 
         # do any downsampling necessary for conversion from real to complex data.
         if int(self._ndim_ratio) != 1:
-            input_samples = input_samples[::int(self._ndim_ratio),:]
+            input_samples = input_samples[::int(self._ndim_ratio), :]
 
         nchan = self._output_nchan
 
@@ -444,9 +457,11 @@ class PFBChannelizer:
             self.logger.debug(f"channelize_conv: Calls to scipy.signal.lfilter took {time.time()-t0:.4f} seconds")
 
             for j in range(output_samples_per_pol_dim):
-                allclose = np.allclose(output_filtered[j,:], output_filtered_lfilter[j,:])
-                if not allclose:
-                    input(f"{j} >> ")
+                print(output_filtered[j,:])
+                input(f"{j} >> ")
+                # allclose = np.allclose(output_filtered[j,:], output_filtered_lfilter[j,:])
+                # if not allclose:
+                #     input(f"{j} >> ")
             # for j in range(output_samples_per_pol_dim):
             #     print(output_filtered[j,:])
             #     print(output_filtered_lfilter[j,:])
@@ -600,6 +615,7 @@ class PFBChannelizer:
         self._dump_data(self.output_header, self.output_data, **kwargs)
         self.logger.debug(f"channelize: Took {time.time() - t_total:.4f} seconds to channelize")
 
+
 def compare_matlab_py(*fnames, **kwargs):
     comp_dat = []
     min_size = -1
@@ -621,7 +637,8 @@ def compare_matlab_py(*fnames, **kwargs):
     axes[1].plot(comp_dat[1])
     diff_squared = (comp_dat[0] - comp_dat[1])**2
     axes[2].plot(diff_squared)
-    axes[3].plot(scipy.signal.fftconvolve(comp_dat[0], comp_dat[1][::-1], mode="same"))
+    axes[3].plot(
+        scipy.signal.fftconvolve(comp_dat[0], comp_dat[1][::-1], mode="same"))
     argmax = np.argmax(diff_squared)
     if not np.allclose(*comp_dat, **kwargs):
         print(comp_dat[0][argmax], comp_dat[1][argmax])
@@ -643,7 +660,7 @@ if __name__ == "__main__":
     # input_file_name = "simulated_pulsar.noise_0.0.nseries_5.ndim_2.dump"
     input_file_path = os.path.join(data_dir, input_file_name)
     # os = Rational(8,7)
-    os = Rational(1,1)
+    os = Rational(1, 1)
     channelizer = PFBChannelizer(
         input_file_path, os
     )
@@ -652,12 +669,14 @@ if __name__ == "__main__":
     # channelizer._init_output_header()
     # channelizer._dump_data(channelizer.output_header, channelizer.output_data)
     # channelizer.channelize()
-    channelizer.channelize_conv()
+    # channelizer.channelize_conv()
 
     compare_matlab_py(
-        "data/py_channelized.conv.noise_0.0.nseries_5.ndim_1.cs.dump",
-        # "data/py_channelized.noise_0.0.nseries_5.ndim_1.cs.dump",
+        # "data/py_channelized.conv.noise_0.0.nseries_5.ndim_1.cs.dump",
+        "data/py_channelized.noise_0.0.nseries_5.ndim_1.cs.dump",
+        # "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.cs.dump",
         "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.cs.dump",
+        # "data/full_channelized_pulsar.noise_0.0.nseries_5.ndim_1.cs.dump.backup",
         rtol=1e-6,
         atol=1e-6
     )

@@ -12,6 +12,7 @@ scipy = "*"
 h5py = "*"
 numba = "*"
 jupyter = "*"
+pyqt5 = "*"
 
 [requires]
 python_version = "3.6"
