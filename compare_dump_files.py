@@ -18,7 +18,7 @@ def compare_dump_files(file_path0, file_path1, **kwargs):
             header = np.frombuffer(
                 buffer, dtype='c', count=PFBChannelizer.header_size)
             data = np.frombuffer(
-                buffer, dtype=PFBChannelizer.float_dtype,
+                buffer, dtype=PFBChannelizer.input_dtype,
                 offset=PFBChannelizer.header_size)
         dat_sizes[i] = data.shape[0]
         comp_dat.append(data)

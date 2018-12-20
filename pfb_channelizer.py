@@ -144,8 +144,13 @@ class PFBChannelizer:
 
     header_size = 4096
     default_input_samples = 2**14
+    # pfb_fir_config_file_path = os.path.join(
+    #     config_dir, "OS_Prototype_FIR_8.mat"
+    # )
     pfb_fir_config_file_path = os.path.join(
-        config_dir, "OS_Prototype_FIR_8.mat")
+        config_dir, "Prototype_FIR.mat"
+    )
+
     complex_dtype = np.complex64
     float_dtype = np.float32
     input_dtype = np.float32
