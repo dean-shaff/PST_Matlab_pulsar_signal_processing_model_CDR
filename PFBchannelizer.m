@@ -167,6 +167,9 @@ output_samples = (Nin/M)/Nmul;
 %=============
 % Write header data to out files
 
+% make sure oversampling factor is present
+hdr_map('OS_FACTOR') = sprintf('%d/%d', Nu, De);
+
 % update TSAMP in output file
 tsamp = str2num(hdr_map('TSAMP'));
 tsamp = tsamp*L*(De/Nu)*Nmul;
@@ -177,7 +180,6 @@ hdr_map('NDIM') = '2';
 % update NCHAN in output file
 hdr_map('NCHAN') = num2str(L);
 write_header(fname_out, hdr_map);
-
 %==============
 % Prepare for main loop
 

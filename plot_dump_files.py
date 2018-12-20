@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from pfb_channelizer import PFBChannelizer
 
 
-def plot_dump_files(*file_paths, no_header=False):
+def plot_dump_files(*file_paths, no_header=False, complex=False):
     comp_dat = []
     dat_sizes = np.zeros(len(file_paths))
     header_offset = PFBChannelizer.header_size
@@ -23,6 +23,12 @@ def plot_dump_files(*file_paths, no_header=False):
             data = np.frombuffer(
                 buffer, dtype=PFBChannelizer.input_dtype,
                 offset=header_offset)
+            if complex:
+                data = data.reshape((-1, 2))
+                data = data[:, 0] + 1j*data[:, 1]
+                # data = data.reshape((2, -1))
+                # data = data[0, :] + 1j*data[1, :]
+
         dat_sizes[i] = data.shape[0]
         comp_dat.append(data)
     # min_size = int(np.amin(dat_sizes))
@@ -71,6 +77,9 @@ def create_parser():
     parser.add_argument('-nh', "--no-header",
                         dest="no_header", action="store_true")
 
+    parser.add_argument('-c', "--complex",
+                        dest="complex", action="store_true")
+
     parser.add_argument("-v", "--verbose",
                         dest="verbose", action="store_true")
 
@@ -79,4 +88,8 @@ def create_parser():
 
 if __name__ == '__main__':
     parsed = create_parser().parse_args()
-    plot_dump_files(*parsed.input_file_paths, no_header=parsed.no_header)
+    plot_dump_files(
+        *parsed.input_file_paths,
+        no_header=parsed.no_header,
+        complex=parsed.complex
+    )
