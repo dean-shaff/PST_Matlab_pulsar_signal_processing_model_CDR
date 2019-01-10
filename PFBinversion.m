@@ -37,32 +37,39 @@ function PFBinversion (filename_in, verbose_)
   fid_in = fopen(filename_in);
   fread(fid_in, hdr_size, 'uint8'); % skip the header
 
-  data_in = fread(fid_in,'single');
+  data_in = fread(fid_in, 'single');
+  size(data_in)
   fclose(fid_in);
 
   data_in = reshape(data_in, n_pol*n_dim, n_chan, []);
   if n_dim == 2
     data_in = reshape(data_in, n_dim, n_pol, n_chan, []);
     data_in = complex(data_in(1,:,:,:), data_in(2,:,:,:));
+    % data_in = complex(data_in(:,1,:,:), data_in(:,2,:,:));
   else
     throw(MException('No support for real input data'));
   end
-
+  % size(data_in)
+  % data_in = reshape(data_in, n_pol, n_chan, []);
   size_data_in = size(data_in);
   % fprintf('size_data_in: %a\n', size_data_in)
   n_samples = size_data_in(end);
 
   os_keep_region = (OS_De/OS_Nu)*n_samples;
-  input_offset = 0;
+  input_offset = {1, 1};
   equalise_ripple = 0;
   fine_channels = zeros(n_pol, n_chan, os_keep_region);
 
   % process fine channels
   for chan=1:n_chan
     for pol=1:n_pol
+      offset = input_offset{pol};
       fprintf('Processing fine channel %d, polarization %d\n', chan, pol);
        fine_chan_proc_res = fine_chan_proc(...
-        data_in(1, pol, chan, :), n_samples, chan, OS_Nu, OS_De, input_offset, equalise_ripple, 1);
+        data_in(1, pol, chan, offset:end), n_samples, chan, OS_Nu, OS_De, equalise_ripple, 1);
+      % fine_chan_proc_res = fine_chan_proc(...
+      %  data_in(pol, 1, chan, offset:end), n_samples, chan, OS_Nu, OS_De, equalise_ripple, 1);
+
       fine_channels(pol, chan, :) = reshape(fine_chan_proc_res, 1, []);
     end
   end
@@ -84,7 +91,7 @@ function PFBinversion (filename_in, verbose_)
 
 end % end of PFBinversion
 
-function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, input_offset_, equalise_ripple_, verbose_)
+function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, equalise_ripple_, verbose_)
 
   % Reads one block of length Nin from a fine channel of the PFB, performs a
   % forward FFT and discards the oversampled portions (transition bands).
@@ -110,10 +117,6 @@ function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, input_offset_, equa
   % Vstream = complex(Vstream(1,:), Vstream(2,:));
   %
   % Vdat = reshape(Vstream, 1, []);
-  input_offset = 0;
-  if exist('input_offset_', 'var')
-    input_offset = input_offset_;
-  end
 
   equalise_ripple = 0;
   if exist('equalise_ripple_', 'var')
@@ -130,7 +133,6 @@ function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, input_offset_, equa
     fprintf('find_chan_proc: chan: %d\n', chan);
     fprintf('find_chan_proc: OS_Nu: %d\n', OS_Nu);
     fprintf('find_chan_proc: OS_De: %d\n', OS_De);
-    fprintf('find_chan_proc: input_offset: %d\n', input_offset);
     fprintf('find_chan_proc: equalise_ripple: %d\n', equalise_ripple);
   end
 
@@ -147,9 +149,8 @@ function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, input_offset_, equa
     -1j
   ];
 
-  if (0)
-    phase_shift = phase_shift_arr(chan)
-  end
+  % phase_shift = phase_shift_arr(chan)
+
   % Forward FFT
   F1 = fftshift(fft(Vdat(1,:).*phase_shift, Nin));
   F1 = reshape(F1, Nin, 1);
@@ -165,7 +166,7 @@ function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, input_offset_, equa
   end
 
   % Optionally equalise PFB pass-band ripple
-  if(equalise_ripple)
+  if equalise_ripple
       % load PFB prototype filter transfer function
       load('config/TF_points.mat');
 
@@ -232,6 +233,13 @@ function z1=invert(fine_channel_data, Nin, n_chan, OS_Nu, OS_De, diagnostic_plot
   end
   FFFF = horzcat(FFFF, fine_channel_data(1, 1:(Nin/2)));
 
+  % FFFF = [];
+  % for chan=1:n_chan
+  %   FFFF = horzcat(FFFF, fine_channel_data(chan,:));
+  % end
+
+
+
   len = length(FFFF);
 
   if incremental_save
@@ -240,8 +248,8 @@ function z1=invert(fine_channel_data, Nin, n_chan, OS_Nu, OS_De, diagnostic_plot
 
   if diagnostic_plots
     figure;
-    subplot(211); plot((1:len),abs(FFFF)); box on; grid on; title('FFFF Mag');
-    subplot(212); plot((1:len),angle(FFFF)); box on; grid on; title('FFFF Phase'); xlabel('time');
+    subplot(211); plot((1:len), abs(FFFF)); box on; grid on; title('FFFF Mag');
+    subplot(212); plot((1:len), angle(FFFF)); box on; grid on; title('FFFF Phase'); xlabel('time');
   end
 
   % back transform
