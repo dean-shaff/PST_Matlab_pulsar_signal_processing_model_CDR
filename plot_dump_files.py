@@ -20,8 +20,10 @@ def plot_dump_files(*file_paths, no_header=False, complex=False):
             buffer = input_file.read()
             # header = np.frombuffer(
             #     buffer, dtype='c', count=PFBChannelizer.header_size)
+            dt = PFBChannelizer.input_dtype
+            dt = np.dtype(dt).newbyteorder('=')
             data = np.frombuffer(
-                buffer, dtype=PFBChannelizer.input_dtype,
+                buffer, dtype=dt,
                 offset=header_offset)
             if complex:
                 data = data.reshape((-1, 2))

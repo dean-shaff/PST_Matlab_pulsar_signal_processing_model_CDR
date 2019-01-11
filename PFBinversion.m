@@ -1,4 +1,4 @@
-function PFBinversion (filename_in, verbose_)
+function PFBinversion (filename_in, verbose_, use_dspsr_inversion_)
 
   % PFB Inversion
   % Takes data that has been channelized with polyphase filterbank and inverts transform.
@@ -20,6 +20,13 @@ function PFBinversion (filename_in, verbose_)
     verbose = verbose_;
   end
 
+
+  use_dspsr_inversion = 0;
+  if exist('use_dspsr_inversion_', 'var')
+    use_dspsr_inversion = use_dspsr_inversion_;
+  end
+
+
   % read in input data
   hdr_map = read_header(filename_in, containers.Map());
 
@@ -38,7 +45,6 @@ function PFBinversion (filename_in, verbose_)
   fread(fid_in, hdr_size, 'uint8'); % skip the header
 
   data_in = fread(fid_in, 'single');
-  size(data_in)
   fclose(fid_in);
 
   data_in = reshape(data_in, n_pol*n_dim, n_chan, []);
@@ -55,41 +61,118 @@ function PFBinversion (filename_in, verbose_)
   % fprintf('size_data_in: %a\n', size_data_in)
   n_samples = size_data_in(end);
 
-  os_keep_region = (OS_De/OS_Nu)*n_samples;
-  input_offset = {1, 1};
-  equalise_ripple = 0;
-  fine_channels = zeros(n_pol, n_chan, os_keep_region);
+  if ~use_dspsr_inversion
+    os_keep_region = (OS_De/OS_Nu)*n_samples;
+    input_offset = {1, 1};
+    equalise_ripple = 0;
+    fine_channels = zeros(n_pol, n_chan, os_keep_region);
 
-  % process fine channels
-  for chan=1:n_chan
-    for pol=1:n_pol
-      offset = input_offset{pol};
-      fprintf('Processing fine channel %d, polarization %d\n', chan, pol);
-       fine_chan_proc_res = fine_chan_proc(...
-        data_in(1, pol, chan, offset:end), n_samples, chan, OS_Nu, OS_De, equalise_ripple, 1);
-      % fine_chan_proc_res = fine_chan_proc(...
-      %  data_in(pol, 1, chan, offset:end), n_samples, chan, OS_Nu, OS_De, equalise_ripple, 1);
+    % process fine channels
+    for chan=1:n_chan
+      for pol=1:n_pol
+        offset = input_offset{pol};
+        fprintf('Processing fine channel %d, polarization %d\n', chan, pol);
+         fine_chan_proc_res = fine_chan_proc(...
+          data_in(1, pol, chan, offset:end), n_samples, chan, OS_Nu, OS_De, equalise_ripple, 1);
+        % fine_chan_proc_res = fine_chan_proc(...
+        %  data_in(pol, 1, chan, offset:end), n_samples, chan, OS_Nu, OS_De, equalise_ripple, 1);
 
-      fine_channels(pol, chan, :) = reshape(fine_chan_proc_res, 1, []);
+        fine_channels(pol, chan, :) = reshape(fine_chan_proc_res, 1, []);
+      end
     end
+
+    inverted = zeros(n_pol, os_keep_region*n_chan);
+
+    % invert data
+    for pol=1:n_pol
+      fprintf('Inverting polarization %d\n', pol);
+      fine_channel_pol = reshape(fine_channels(pol, :, :), n_chan, os_keep_region);
+      invert_res = invert(...
+        fine_channel_pol, os_keep_region, n_chan, OS_Nu, OS_De, 0, 0, 1);
+      inverted(pol, :) = invert_res;
+    end
+  else
+    inverted = dspsr_inversion(squeeze(data_in), OS_Nu, OS_De, 1);
   end
-
-  inverted = zeros(n_pol, os_keep_region*n_chan);
-
-  % invert data
-  for pol=1:n_pol
-    fprintf('Inverting polarization %d\n', pol);
-    fine_channel_pol = reshape(fine_channels(pol, :, :), n_chan, os_keep_region);
-    invert_res = invert(...
-      fine_channel_pol, os_keep_region, n_chan, OS_Nu, OS_De, 0, 0, 1);
-    inverted(pol, :) = invert_res;
-  end
-
   % save inverted data
   inverted_file_name = strcat(filename_in, '.inverted.mat');
   save(inverted_file_name, 'inverted')
 
 end % end of PFBinversion
+
+function inverted=dspsr_inversion(data_in, OS_Nu, OS_De, verbose_)
+  % replicate the filterbank inversion used in dspsr.
+  verbose=0;
+  if exist('verbose_', 'var')
+    verbose = verbose_;
+  end
+  input_fft_length = 32768;  % size of forward FFT, from dspsr logs
+  output_fft_length = 229376;  % size of backward FFT, from dspsr logs
+  [n_pol, n_chan, n_dat] = size(data_in);
+  input_discard = struct('pos', 960,'neg', 1040); % input dedispersion removal region, from dspsr logs
+  input_discard_total = input_discard.pos + input_discard.neg;
+  input_sample_step = input_fft_length - input_discard_total;
+  output_discard = struct('pos', 6720,'neg', 7280);  % output dedispersion removal region, from dspsr logs
+  output_discard_total = output_discard.pos + output_discard.neg;
+  output_sample_step = output_fft_length - output_discard_total;
+
+  input_n_parts = round((n_dat - input_discard_total) / input_sample_step);
+  output_n_parts = round((n_dat - output_discard_total) / output_sample_step);
+
+  input_os_keep = (OS_De/OS_Nu) * input_fft_length;
+  input_os_discard = (input_fft_length - input_os_keep) / 2;
+
+  inverted = zeros(1, n_pol, output_n_parts * output_sample_step);
+
+  if verbose
+    fprintf('max(data_in): %f\n', max(data_in(:)));
+    fprintf('n_pol: %d\n', n_pol);
+    fprintf('n_chan: %d\n', n_chan);
+    fprintf('n_dat: %d\n', n_dat);
+    fprintf('input_fft_length: %d\n', input_fft_length);
+    fprintf('output_fft_length: %d\n', output_fft_length);
+    fprintf('input_sample_step: %d\n', input_sample_step);
+    fprintf('output_sample_step: %d\n', output_sample_step);
+    fprintf('input_discard_total: %d\n', input_discard_total);
+    fprintf('output_discard_total: %d\n', output_discard_total);
+    fprintf('input_n_parts: %d\n', input_n_parts);
+    fprintf('output_n_parts: %d\n', output_n_parts);
+    fprintf('input_os_keep: %d\n', input_os_keep);
+  end
+  max_fft = 0
+  for i_part=1:input_n_parts-1
+    if verbose
+      fprintf('Starting loop %d/%d\n', i_part, input_n_parts);
+    end
+
+    for i_pol=1:n_pol
+      stitched_freq = zeros(1, n_chan*input_os_keep);
+      for i_chan=1:n_chan
+        if verbose
+          % fprintf('loop %d/%d: pol: %d, chan: %d\n', i_part, input_n_parts, i_pol, i_chan);
+        end
+        idx = (i_part-1) * (input_sample_step);
+        time_chan_pol = data_in(i_pol, i_chan, idx+1:idx+input_fft_length);
+        freq_chan_pol = fft(time_chan_pol, input_fft_length);
+        freq_chan_pol_keep = freq_chan_pol(input_os_discard+1: input_os_keep + input_os_discard);
+        stitched_freq(1, (i_chan-1)*input_os_keep+1:(i_chan)*input_os_keep) = squeeze(freq_chan_pol_keep(1, 1, :));
+      end
+      if max(stitched_freq(:)) > max_fft
+        max_fft = max(stitched_freq(:));
+      end
+      stitched_time = ifft(stitched_freq, output_fft_length);
+      stitched_time_keep = stitched_time(1, output_discard.pos+1:end-output_discard.neg);
+      idx = (i_part-1) * output_sample_step;
+      inverted(1, i_pol, idx+1:idx+output_sample_step) = stitched_time_keep;
+    end
+  end
+  fprintf('max(data_in): %f\n', max(data_in(:)));
+  fprintf('max_fft: %f\n', max_fft);
+  fprintf('max(inverted): %f\n', max(inverted(:)));
+
+end  % end funciton dspsr_inversion
+
+
 
 function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, equalise_ripple_, verbose_)
 

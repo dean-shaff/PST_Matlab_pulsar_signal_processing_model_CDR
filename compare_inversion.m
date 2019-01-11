@@ -23,13 +23,13 @@ function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset
   n_dim = str2num(hdr_map('NDIM'));
   n_pol = str2num(hdr_map('NPOL'));
 
-  fid_in = fopen(simulated_pulsar_filename);
+  fid_sim = fopen(simulated_pulsar_filename);
   % skip header
-  fread(fid_in, hdr_size, 'uint8');
+  fread(fid_sim, hdr_size, 'uint8');
 
-  data_simulated = fread(fid_in, 'single');
+  data_simulated = fread(fid_sim, 'single');
   data_simulated = reshape(data_simulated, 1, []);
-  fclose(fid_in);
+  fclose(fid_sim);
 
   if n_dim == 2
     fprintf('compare_inversion: pulsar data is complex\n');
@@ -37,19 +37,64 @@ function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset
     data_simulated = complex(data_simulated(1, :), data_simulated(2, :));
   else
     fprintf('compare_inversion: pulsar data is real\n');
+    throw MException('Real data not supported');
   end
 
   % data_simulated = reshape(data_simulated, [], n_pol);
   data_simulated = transpose(reshape(data_simulated, n_pol, []));
 
-  % read in inverted data (saved in .mat matlab file)
-  load(inverted_file_name);
-  data_inverted = inverted;
+  if endsWith(inverted_file_name, '.mat')
+    % read in inverted data (saved in .mat matlab file)
+    fprintf('Using .mat file\n');
+    load(inverted_file_name);
+    data_inverted = inverted;
+
+  elseif endsWith(inverted_file_name, '.dump')
+    % read in inverted dat from dspsr dump
+    fprintf('Using .dump file\n');
+    hdr_map = read_header(inverted_file_name, containers.Map());
+    hdr_size = str2num(hdr_map('HDR_SIZE'));
+    n_dim_inv = str2num(hdr_map('NDIM'));
+    n_pol_inv = str2num(hdr_map('NPOL'));
+    n_bit_inv = str2num(hdr_map('NBIT'));
+
+    fid_inv = fopen(inverted_file_name);
+    % skip header
+    fread(fid_inv, hdr_size, 'uint8');
+
+    data_inverted = fread(fid_inv, 'single');
+    % figure;
+    % subplot(1, 1, 1);
+    %   plot((1:length(data_inverted)), data_inverted);
+    %   pause
+
+    data_inverted = reshape(data_inverted, 1, []);
+    data_inverted = data_inverted ./ 229376; 
+
+    fclose(fid_inv);
+
+    if n_dim_inv == 2
+      fprintf('compare_inversion: inverted data is complex\n');
+      data_inverted = reshape(data_inverted, n_dim_inv, []);
+      data_inverted = complex(data_inverted(1, :), data_inverted(2, :));
+    else
+      fprintf('compare_inversion: inverted data is real\n');
+      throw MException('Real data not supported');
+    end
+
+  end
 
   % data_inverted = reshape(data_inverted, [], n_pol);
   data_inverted = transpose(reshape(data_inverted, n_pol, []));
 
-  len = round(0.2*length(data_inverted));
+  % data_inverted = data_inverted ./ max(data_inverted);
+  % data_simulated = data_simulated ./ max(data_simulated);
+  fprintf('max of data_inverted: %f\n', max(data_inverted));
+  fprintf('length of data_inverted: %d\n', length(data_inverted));
+  fprintf('length of data_simulated: %d\n', length(data_simulated));
+
+  len = length(data_inverted);
+  len = round(0.2*len);
 
   if plot_time
     figure;
@@ -57,23 +102,29 @@ function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset
     for pol=1:n_pol
       x = 1:len;
       incr = pol - 1;
+      real_sim = real(data_simulated(1:len, pol));
+      imag_sim = imag(data_simulated(1:len, pol));
+      real_inv = real(data_inverted(1:len, pol));
+      imag_inv = imag(data_inverted(1:len, pol));
+
       subplot(3, n_pol, incr + 1);
-      plot(x, real(data_simulated(1:len, pol)), x, real(data_inverted(1:len, pol)));
-      box on; grid on;
-      legend({'Original Real', 'Inverted Real'});
-      title(sprintf('Pol %d Original vs Inverted Real', pol));
+        plot(x, real_sim, x, real_inv);
+        % patchline(x, real_sim, 'linestyle','--','edgecolor','r','linewidth',3,'edgealpha',0.2);
+        % patchline(x, real_inv, 'linestyle','--','edgecolor','b','linewidth',3,'edgealpha',0.2);
+        box on; grid on;
+        legend({'Original Real', 'Inverted Real'});
+        title(sprintf('Pol %d Original vs Inverted Real', pol));
 
       subplot(3, n_pol, incr + 3);
-      hold on; plot(x, imag(data_simulated(1:len, pol)), x, imag(data_inverted(1:len, pol))); hold off;
-      alpha(0.2);
-      box on; grid on;
-      legend({'Original Imag', 'Inverted Imag'});
-      title(sprintf('Pol %d Original vs Inverted Imag', pol)); xlabel('time');
+        plot(x, imag_sim, x, imag_inv);
+        box on; grid on;
+        legend({'Original Imag', 'Inverted Imag'});
+        title(sprintf('Pol %d Original vs Inverted Imag', pol)); xlabel('time');
 
       cross_corr_real = xcorr(...
-        real(data_simulated(1:len, pol)), real(data_inverted(1:len, pol)));
+        real_sim, real_inv);
       cross_corr_imag = xcorr(...
-        imag(data_simulated(1:len, pol)), imag(data_inverted(1:len, pol)));
+        imag_sim, imag_inv);
       [argvalue, argmax] = max(cross_corr_real);
       len_cross_corr = length(cross_corr_real);
       offset_from_middle = argmax - round(len_cross_corr/2);
@@ -151,14 +202,13 @@ function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset
 
       subplot(3, 2, 1 + incr);
         plot(x, abs(fft_sim_pol), x, abs(fft_inv_pol));
-        alpha(0.5);
         xlim([-100, len]);
-        % set(gca, 'YScale', 'log');
         legend({'Magnitude of FFT of Original', 'Magnitude of FFT of Inverted'});
         box on; grid on;
         title(sprintf('Pol: %d: Magnitude of FFT of Original vs Inverted', pol));
 
-      subplot(3, 2, 3 + incr); plot(x, mag2db(abs(fft_sim_pol)), x, mag2db(abs(fft_inv_pol)));
+      subplot(3, 2, 3 + incr);
+        plot(x, mag2db(abs(fft_sim_pol)), x, mag2db(abs(fft_inv_pol)));
         legend({'Log 20 Magnitude of FFT of Original', 'Log 20 Magnitude of FFT of Inverted'});
         box on; grid on;
         title(sprintf('Pol: %d: Log 20 Magnitude of FFT of Original vs Inverted', pol));
