@@ -192,9 +192,9 @@ fid = fopen(fname, 'a');
 % Random vectors
 prev_bytes = 1;
 for ii = 1:nseries,
-    for b=1:prev_bytes
-      fprintf('\b');
-    end
+    % for b=1:prev_bytes
+    %   fprintf('\b');
+    % end
     prev_bytes = fprintf('\nLoop # %i of %i\n', ii, nseries);
 
     % Time vector
@@ -278,6 +278,7 @@ for ii = 1:nseries,
             z = [z1clip, z2clip];
             dat = reshape(transpose(z),npol*nclip_out,1);
         case 'complextocomplex'
+            % z = [real(z1clip), real(z2clip), imag(z1clip), imag(z2clip)];
             z = [real(z1clip), imag(z1clip), real(z2clip), imag(z2clip)];
             dat = reshape(transpose(z),2*npol*nclip_out,1);
     end

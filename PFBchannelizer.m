@@ -251,12 +251,22 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
       % Parse real and imag components if incoming data is complex
       switch dformat
           case 'complextocomplex'
-              Vstream = reshape(Vstream, 2, []);
-              Vstream = complex(Vstream(1,:), Vstream(2,:));
+              Vstream = reshape(Vstream, 2*npol, []);
+              size_Vstream = size(Vstream);
+              Vdat = zeros(npol, size_Vstream(end));
+              Vdat(1, :) = complex(Vstream(1,:), Vstream(2,:));
+              Vdat(2, :) = complex(Vstream(3,:), Vstream(4,:));
+              % Vdat = squeeze(complex(Vdat(:,1,:), Vdat(:,2,:)));
+              % Vstream = reshape(Vstream, 2, []);
+              % Vstream = complex(Vstream(1,:), Vstream(2,:));
+              % Vdat = reshape(Vdat, 2, []);
+              % Vdat = complex(Vdat(1,:), Vdat(2,:));
+            case 'realtocomplex'
+              Vdat = squeeze(reshape(Vstream, npol, []));
       end;
 
-      % Separate data into different polarisations: Vdat(1,:) and Vdat(2,:)
-      Vdat = reshape(Vstream, npol, []);
+      % % Separate data into different polarisations: Vdat(1,:) and Vdat(2,:)
+      % Vdat = reshape(Vstream, npol, []);
 
       % in the case of real to complex, we have to downsample our data
       if Nmul == 2
@@ -286,7 +296,8 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
         % fprintf('pol: %d', p);
         pfb = pfb_func{p};
         for n = 1:output_samples
-          y2(p,:,n) = pfb(Vdat(p,(n-1)*chunk_size+1:n*chunk_size));
+          res = pfb(Vdat(p,(n-1)*chunk_size+1:n*chunk_size));
+          y2(p,:,n) = res;
         end
       end
 
@@ -315,19 +326,30 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
       % dat = reshape(transpose(z),2*npol*output_samples,1);
 
       % write data to y_full_channel
-      s = (output_samples)*(ii - 1) + 1;
-      e = (output_samples)*ii;
+      s = (Nmul*output_samples)*(ii - 1) + 1;
+      e = (Nmul*output_samples)*ii;
       % for c=1:L
       %   y_full_channel(1,c,s:e) = real(y2(1,c,(1:output_samples)));
       %   y_full_channel(2,c,s:e) = imag(y2(1,c,(1:output_samples)));
       %   y_full_channel(3,c,s:e) = real(y2(2,c,(1:output_samples)));
       %   y_full_channel(4,c,s:e) = imag(y2(2,c,(1:output_samples)));
       % end
+      % size(y_full_channel(1, :, s:e))
+      % size(y2)
+      y_full_channel(1,:,s:e) = real(y2(1,:,:));
+      y_full_channel(2,:,s:e) = imag(y2(1,:,:));
+      y_full_channel(3,:,s:e) = real(y2(2,:,:));
+      y_full_channel(4,:,s:e) = imag(y2(2,:,:));
 
-      y_full_channel(1,:,s:e) = real(y2(1,:,(1:output_samples)));
-      y_full_channel(2,:,s:e) = imag(y2(1,:,(1:output_samples)));
-      y_full_channel(3,:,s:e) = real(y2(2,:,(1:output_samples)));
-      y_full_channel(4,:,s:e) = imag(y2(2,:,(1:output_samples)));
+      % y_full_channel(1,:,s:e) = real(y2(1,:,:));
+      % y_full_channel(2,:,s:e) = real(y2(2,:,:));
+      % y_full_channel(3,:,s:e) = imag(y2(1,:,:));
+      % y_full_channel(4,:,s:e) = imag(y2(2,:,:));
+
+      % y_full_channel(1,:,s:e) = real(y2(1,:,1:output_samples));
+      % y_full_channel(2,:,s:e) = imag(y2(1,:,1:output_samples));
+      % y_full_channel(3,:,s:e) = real(y2(2,:,1:output_samples));
+      % y_full_channel(4,:,s:e) = imag(y2(2,:,1:output_samples));
 
       if diagnostic_plots
         t = (1:output_samples);
@@ -372,7 +394,7 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
 
   % Open output file for full channelization
   fid_out = fopen(fname_out, 'a');
-  fwrite(fid_out, reshape(y_full_channel, npol*2*L*(output_samples)*nseries, 1), ntype);
+  fwrite(fid_out, reshape(y_full_channel, npol*2*L*(Nmul*output_samples)*nseries, 1), ntype);
 
   fclose(fid_in);
   fclose(fid_out);
@@ -510,7 +532,8 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
 
       y(L/2+2:L) = conj(fliplr(y(2:L/2)));
     elseif output_ndim == 2
-      y = L*L*ifft(yP);
+      % y = L*L*ifft(yP);
+      y = L*fft(yP);
     end
     %Changing the Control Index
     n = n+1;

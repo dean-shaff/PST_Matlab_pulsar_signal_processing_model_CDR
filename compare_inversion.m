@@ -1,4 +1,4 @@
-function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset_, plot_time_, plot_freq_)
+function compare_inversion(simulated_pulsar_filename, inverted_filename, offset_, plot_time_, plot_freq_)
   % compare simulated pulsar raw data to inverted data.
   close all;
   offset = 0;
@@ -17,75 +17,31 @@ function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset
   end
 
 
-  % read in input data
-  hdr_map = read_header(simulated_pulsar_filename, containers.Map());
-  hdr_size = str2num(hdr_map('HDR_SIZE'));
-  n_dim = str2num(hdr_map('NDIM'));
+  [data_simulated, hdr_map] = load_simulated_pulsar_dump(simulated_pulsar_filename);
   n_pol = str2num(hdr_map('NPOL'));
-
-  fid_sim = fopen(simulated_pulsar_filename);
-  % skip header
-  fread(fid_sim, hdr_size, 'uint8');
-
-  data_simulated = fread(fid_sim, 'single');
-  data_simulated = reshape(data_simulated, 1, []);
-  fclose(fid_sim);
-
-  if n_dim == 2
-    fprintf('compare_inversion: pulsar data is complex\n');
-    data_simulated = reshape(data_simulated, n_dim, []);
-    data_simulated = complex(data_simulated(1, :), data_simulated(2, :));
-  else
-    fprintf('compare_inversion: pulsar data is real\n');
-    throw MException('Real data not supported');
-  end
-
+  OS_Nu = 1;
+  OS_De = 1;
+  % OS_Nu = 8;
+  % OS_De = 7;
+  % [OS_Nu, OS_De] = get_os_factor_from_hdr_map(hdr_map);
+  output_fft_length = get_output_fft_length(32768, 8, OS_Nu, OS_De);
   % data_simulated = reshape(data_simulated, [], n_pol);
-  data_simulated = transpose(reshape(data_simulated, n_pol, []));
+  % data_simulated = transpose(reshape(data_simulated, n_pol, []));
 
-  if endsWith(inverted_file_name, '.mat')
+  if endsWith(inverted_filename, '.mat')
     % read in inverted data (saved in .mat matlab file)
     fprintf('Using .mat file\n');
-    load(inverted_file_name);
-    data_inverted = inverted;
+    load(inverted_filename);
+    data_inverted = squeeze(inverted);
+    data_inverted = transpose(data_inverted);
 
-  elseif endsWith(inverted_file_name, '.dump')
-    % read in inverted dat from dspsr dump
-    fprintf('Using .dump file\n');
-    hdr_map = read_header(inverted_file_name, containers.Map());
-    hdr_size = str2num(hdr_map('HDR_SIZE'));
-    n_dim_inv = str2num(hdr_map('NDIM'));
-    n_pol_inv = str2num(hdr_map('NPOL'));
-    n_bit_inv = str2num(hdr_map('NBIT'));
-
-    fid_inv = fopen(inverted_file_name);
-    % skip header
-    fread(fid_inv, hdr_size, 'uint8');
-
-    data_inverted = fread(fid_inv, 'single');
-    % figure;
-    % subplot(1, 1, 1);
-    %   plot((1:length(data_inverted)), data_inverted);
-    %   pause
-
-    data_inverted = reshape(data_inverted, 1, []);
-    data_inverted = data_inverted ./ 229376; 
-
-    fclose(fid_inv);
-
-    if n_dim_inv == 2
-      fprintf('compare_inversion: inverted data is complex\n');
-      data_inverted = reshape(data_inverted, n_dim_inv, []);
-      data_inverted = complex(data_inverted(1, :), data_inverted(2, :));
-    else
-      fprintf('compare_inversion: inverted data is real\n');
-      throw MException('Real data not supported');
-    end
-
+  elseif endsWith(inverted_filename, '.dump')
+    data_inverted = load_dspsr_dump(inverted_filename);
   end
 
+  data_inverted = data_inverted ./ output_fft_length; % normalized inverse FFT
+
   % data_inverted = reshape(data_inverted, [], n_pol);
-  data_inverted = transpose(reshape(data_inverted, n_pol, []));
 
   % data_inverted = data_inverted ./ max(data_inverted);
   % data_simulated = data_simulated ./ max(data_simulated);
@@ -93,8 +49,9 @@ function compare_inversion(simulated_pulsar_filename, inverted_file_name, offset
   fprintf('length of data_inverted: %d\n', length(data_inverted));
   fprintf('length of data_simulated: %d\n', length(data_simulated));
 
+  percentage = 1.0;
   len = length(data_inverted);
-  len = round(0.2*len);
+  len = round(percentage*len);
 
   if plot_time
     figure;

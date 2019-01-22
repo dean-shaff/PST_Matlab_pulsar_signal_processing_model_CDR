@@ -17,7 +17,7 @@ BW           40                    # bandwidth of in MHz (-ve lower sb) 40 for c
 TSAMP        0.0125                 # for real to complex
 
 NBIT         32                     # number of bits per sample
-NDIM         2                      # dimension of samples (2=complex, 1=real)
+NDIM         1                      # dimension of samples (2=complex, 1=real)
 NPOL         2                      # number of polarizations observed
 NCHAN        1                      # number of channels
 
