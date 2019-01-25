@@ -157,7 +157,8 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
 
 
   Os = Nu/De;
-  fname_pfb = 'config/OS_Prototype_FIR_8.mat';
+  % fname_pfb = 'config/OS_Prototype_FIR_8.mat';
+  fname_pfb = 'config/Prototype_FIR.mat';
   % Number of channels in filter-bank
   L= 8;
   M = L/Os; % Commutator Length
@@ -503,6 +504,14 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
     xM(1,1:L) = fliplr(x);%Note the Flip (Left-Right) place the Newest sample
                           % to the front
     %transpose(yP((1:L),1))
+    %Performing the Circular Shift to Compensate the Shift in Band Center
+    %Frequencies
+    y1S = yP;
+    % if n == 0
+    %     y1S = yP;
+    % else
+    %     y1S = [yP((Nchan-n)+1:end); yP(1:(Nchan-n))];
+    % end;
 
     % yP
     % n
@@ -518,7 +527,7 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
     % %Evaluating the Cross-Stream (i.e. column wise) IDFT using Packing
     % %Method
     % %The Complex-Valued Sequence of Half Size
-    y2C = yP(1:2:end) + 1j*yP(2:2:end);
+    y2C = y1S(1:2:end) + 1j*y1S(2:2:end);
 
     if output_ndim == 1
       %The Complex IDFT of LC=L/2 Points
@@ -532,11 +541,12 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
 
       y(L/2+2:L) = conj(fliplr(y(2:L/2)));
     elseif output_ndim == 2
-      % y = L*L*ifft(yP);
-      y = L*fft(yP);
+      y = L*L*ifft(y1S);
+      % y = L*fft(y1S); % have to use inverse fft
     end
     %Changing the Control Index
     n = n+1;
+    n = mod(n, Nchan);
   end
 
 
@@ -591,6 +601,7 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
       y(L/2+2:L) = conj(fliplr(y(2:L/2)));
     elseif output_ndim == 2
       y = L*L*ifft(y1S);
+      % y = L*fft(y1S);
     end
     %Changing the Control Index
     n = n+1;
