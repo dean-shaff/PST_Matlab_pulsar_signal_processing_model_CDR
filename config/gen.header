@@ -30,6 +30,6 @@ MODE         PSR
 # HALT         0
 OBS_OFFSET   0
 INSTRUMENT   dspsr
-DSB 1
+DSB 0
 # OS_FACTOR    8/7
 # OS_FACTOR    1/1

@@ -68,7 +68,11 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
   % current_branch = git_current_branch();
 
   % Output file name
-  fname_out = strrep(filename_in, 'simulated_pulsar', 'full_channelized_pulsar');
+  if ~isempty(strfind(filename_in, 'simulated_pulsar'))
+    fname_out = strrep(filename_in, 'simulated_pulsar', 'full_channelized_pulsar');
+  else
+    fname_out = strrep(filename_in, 'impulse', 'full_channelized_impulse');
+  end
 
   pfb_type = 0;
   pfb_str = 'cs';
@@ -156,15 +160,22 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
   end
 
 
+
   Os = Nu/De;
   % fname_pfb = 'config/OS_Prototype_FIR_8.mat';
-  fname_pfb = 'config/Prototype_FIR.mat';
+
   % Number of channels in filter-bank
-  L= 8;
+  L = 8;
   M = L/Os; % Commutator Length
   L_M = L-M; % Overlap
   Nin = M*(2^14);  % Number of elements per input file read
   output_samples = (Nin/M)/Nmul;
+
+  Ntaps = 40 * L + 1;
+  design_PFB(L, Nu, De, Ntaps-1, 2^14, 0)
+
+  % fname_pfb = 'config/Prototype_FIR.mat';
+  fname_pfb = 'config/OS_Prototype_FIR_8.mat';
   %=============
   % Write header data to out files
 
@@ -180,6 +191,7 @@ function PFBchannelizer(filename_in, nseries, os_factor, verbose_, diagnostic_pl
   hdr_map('NDIM') = '2';
   % update NCHAN in output file
   hdr_map('NCHAN') = num2str(L);
+  hdr_map('DSB') = '1';
   write_header(fname_out, hdr_map);
   %==============
   % Prepare for main loop
@@ -471,7 +483,7 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
 
   FiltCoefStruct = load(pfb_filter_coef_fname);
   h = single(FiltCoefStruct.h);
-
+  hann_window = hann(L);
   %Initiate the Input Mask that is multiplied with the Filter mask
   xM = zeros(1,length(h), ntype);
   %Initiate the Output mask
@@ -541,6 +553,7 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
 
       y(L/2+2:L) = conj(fliplr(y(2:L/2)));
     elseif output_ndim == 2
+      % y1S = y1S.*hann_window;
       y = L*L*ifft(y1S);
       % y = L*fft(y1S); % have to use inverse fft
     end
@@ -567,6 +580,7 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
 
     %Performing the Circular Shift to Compensate the Shift in Band Center
     %Frequencies
+    % y1S = yP;
     if n == 0
         y1S = yP;
     else
@@ -600,6 +614,7 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
 
       y(L/2+2:L) = conj(fliplr(y(2:L/2)));
     elseif output_ndim == 2
+      % y1S = y1S.*hann_window;
       y = L*L*ifft(y1S);
       % y = L*fft(y1S);
     end
@@ -608,4 +623,10 @@ function PFB = PFB_factory(Nchan, pfb_filter_coef_fname, OS_Nu, OS_De, output_nd
     n = mod(n, OS_Nu);
 
   end
+end
+
+function window = hann(N)
+  n = 1:N;
+  window = 0.5*(1-cos((2*pi*n)/(N-1)));
+  window = reshape(window, [], 1);
 end

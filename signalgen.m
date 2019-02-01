@@ -1,4 +1,4 @@
-function fname = signalgen(nseries, noise, verbose_)
+function fname = signalgen(nseries, noise, signal_type_, verbose_)
 % Generates a file containing dual noise vectors with phase-dependent
 % partial polarization. File is 32-bit floating point with polarizations
 % interleaved at each time step.
@@ -52,6 +52,12 @@ function fname = signalgen(nseries, noise, verbose_)
 % ----------------------------------------------------------------------
 
 %=============
+signal_type = 'pulsar';
+if exist('signal_type_', 'var')
+  signal_type = signal_type_
+end
+
+
 verbose = 1;
 if exist('verbose_', 'var')
   verbose = verbose_
@@ -60,7 +66,7 @@ end
 
 %=============
 % Default settings for variables that might be found in a header file
-headerFile = 'config/gen.header'; %Use a better name
+headerFile = 'config/gen.header'; % Use a better name
 
 hdrsize = 4096; % Header size
 npol = 2; % Number of polarizations (should always be 2 when calc Stokes)
@@ -140,6 +146,9 @@ Tin = Tout;
 Nin = Nout/Nmul; % Number of data elements in input time series
 Pmul = 1/Nmul; % Power multiplication factor for all but the DC channel
 
+
+
+
 %===============
 % Create the dispersion kernel and determine the number of elements to be
 % clipped off the beginning and end.
@@ -158,6 +167,10 @@ frac_lost = (n_lo + n_hi)/Nin; % fraction of array that's lost
 fprintf('Lost fraction of time series = %f\n', frac_lost);
 fprintf('Time series length = %f s\n', nclip_in*Tin);
 
+% ================
+% if using impulse option, set the width and offset
+impulse_width = 1;
+impulse_offset = round(nclip_out / 4);
 %===============
 % print out diagnostic message
 if verbose
@@ -180,7 +193,11 @@ trel = (0:Nin-1)*Tin;
 
 %===============
 % current_branch = git_current_branch();
-fname = sprintf('data/simulated_pulsar.noise_%.1f.nseries_%d.ndim_%d.dump', noise, nseries, NperPol);
+if strcmp(signal_type, 'pulsar')
+  fname = sprintf('data/simulated_pulsar.noise_%.1f.nseries_%d.ndim_%d.dump', noise, nseries, NperPol);
+elseif strcmp(signal_type, 'impulse')
+  fname = sprintf('data/impulse.noise_%.1f.nseries_%d.ndim_%d.dump', noise, nseries, NperPol)
+end
 % Open file for writing
 hdr_map('TSAMP') = num2str(Tout * 1e6); % this is sampling interval, in microseconds
 hdr_map('NDIM') = num2str(NperPol);
@@ -190,13 +207,56 @@ write_header(fid, hdr_map);
 fid = fopen(fname, 'a');
 %=============
 % Random vectors
+if strcmp(signal_type, 'impulse')
+  N = nclip_out*nseries;
+  fprintf('N=%d\n', N)
+  % t = 1:nclip_out*nseries;
+  % t = linspace(0,1e5,nclip_out*nseries);
+  % z = complex(zeros(nclip_out*nseries, npol, 'single'));
+  % z(:, 1) = sin(t); %  + 1j*sin(t);
+  % z(:, 2) = sin(t); %  + 1j*sin(t);
+  freqVector = complex(zeros(N,npol,'single'));
+  freqVector(round(N/20),:) = 1.0;
+
+
+  z = complex(zeros(N, npol, 'single'));
+  z(:, 1) = ifft(freqVector(:, 1)).*N;
+  z(:, 2) = ifft(freqVector(:, 2)).*N;
+
+  % figure;
+  % subplot(211); plot((1:N),real(z(1:N,1))); box on; grid on; title('sig Mag');
+  % subplot(212); plot((1:N),imag(z(1:N,1))); box on; grid on; title('sig Phase'); xlabel('frequency');
+
+  z = [real(z(:,1)), imag(z(:,1)), real(z(:,2)), imag(z(:,2))];
+
+  dat = reshape(transpose(z),2*npol*nclip_out*nseries,1);
+  fwrite(fid, dat, ntype);
+  fclose(fid);
+  return
+  % Introduce an impulse in z
+  % z1(impulse_offset:impulse_offset+impulse_width-1,1) = 1 + 1i;
+  % z1(impulse_offset:impulse_offset+impulse_width-1,2) = 1 + 1i;
+  %
+  % z1clip = ifft(z1(:, 1)).*nclip_out;
+  % z2clip = ifft(z1(:, 2)).*nclip_out;
+  % freqVector = complex(zeros(Nout,1,'double'));
+  % freqVector(3) = 1.0;
+  %
+  % figure;
+  % subplot(211); plot((1:Nout),abs(freqVector(1:Nout,1))); box on; grid on; title('sig Mag');
+  % subplot(212); plot((1:Nout),phase(freqVector(1:Nout,1))); box on; grid on; title('sig Phase'); xlabel('frequency');
+  %
+  % z1 = ifft(freqVector).*Nout;
+
+end
+
+
 prev_bytes = 1;
 for ii = 1:nseries,
     % for b=1:prev_bytes
     %   fprintf('\b');
     % end
     prev_bytes = fprintf('\nLoop # %i of %i\n', ii, nseries);
-
     % Time vector
     if ii == 1,
         tt = t0 - n_hi*Tin + trel;
@@ -285,7 +345,7 @@ for ii = 1:nseries,
 
     %Write vector to file
     fwrite(fid, dat, ntype);
-end;
+end
 
 fclose(fid);
 return

@@ -1,4 +1,4 @@
-function design_PFB(Nchan,Num,Den,Ntaps,ffft_len,display)
+function design_PFB(Nchan, Num, Den, Ntaps, ffft_len, display)
 
     % Oversampling Factor
     OS = Num/Den;
@@ -11,7 +11,12 @@ function design_PFB(Nchan,Num,Den,Ntaps,ffft_len,display)
     Fp = 1./Nchan;
     % Fp = 1./NchanNorm;
     % Stop-band frequency
+    if OS == 1
+      OS = OS + 0.1;
+    end
+    % Fs = 1.1*Fp;
     Fs = 1.*(2*OS-1)/Nchan;
+    % Fs = (2*OS-1)/Nchan;
 
     fprintf('design_PFB: cut-off frequency: %f\n', Fp);
     fprintf('design_PFB: stop-band frequency: %f\n', Fs);
@@ -26,7 +31,7 @@ function design_PFB(Nchan,Num,Den,Ntaps,ffft_len,display)
     h = H_Obj_0.Numerator;
 
     % Save impulse response h, and other parameters
-    save Prototype_FIR.mat h Nchan Fp Fs Ap As;
+    save config/Prototype_FIR.mat h Nchan Fp Fs Ap As;
 
     % Save a sampled version of the Transfer Function for later equalisation
     % - length should be Nchan times the half-channel width (where width is FFTlength/OS_factor)
@@ -35,7 +40,7 @@ function design_PFB(Nchan,Num,Den,Ntaps,ffft_len,display)
     save TF_points.mat H0 W;
 
     % Optionally display design
-    if(display==1)
+    if (display==1)
         [H0,W] = freqz (h, 1, Ntaps*Nchan);
 
         %Rescaling the frequency axis
