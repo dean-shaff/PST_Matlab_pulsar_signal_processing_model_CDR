@@ -37,7 +37,7 @@ function design_PFB(Nchan, Num, Den, Ntaps, ffft_len, display)
     % - length should be Nchan times the half-channel width (where width is FFTlength/OS_factor)
     % e.g. 64 channels, ffft_len = 1024: 28,672 is 448*64, which gives 448 points per half-channel, 896 per channel
     [H0,W] = freqz (h, 1, ffft_len*Den*Nchan/(2*Num));
-    save TF_points.mat H0 W;
+    save config/TF_points.mat H0 W;
 
     % Optionally display design
     if (display==1)
