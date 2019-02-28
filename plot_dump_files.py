@@ -8,8 +8,23 @@ import matplotlib.pyplot as plt
 
 from pfb_channelizer import PFBChannelizer
 
+op_lookup = {
+    "xcorr": lambda a, b: scipy.signal.fftconvolve(
+        a, b[::-1], mode="same"
+    ),
+    "sub": lambda a, b: np.abs(np.sub(a, b)),
+    "div": lambda a, b: np.divide(a, b)
+}
 
-def plot_dump_files(*file_paths, no_header=False, complex=False):
+
+def plot_dump_files(*file_paths,
+                    no_header=False,
+                    complex=False,
+                    n_samples=1.0,
+                    op_str="xcorr"):
+    if op_str not in op_lookup:
+        raise KeyError(f"Can't find {op} in op_lookup")
+    op = op_lookup[op_str]
     comp_dat = []
     dat_sizes = np.zeros(len(file_paths))
     header_offset = PFBChannelizer.header_size
@@ -28,17 +43,26 @@ def plot_dump_files(*file_paths, no_header=False, complex=False):
             if complex:
                 data = data.reshape((-1, 2))
                 data = data[:, 0] + 1j*data[:, 1]
+                data = np.abs(data)
                 # data = data.reshape((2, -1))
                 # data = data[0, :] + 1j*data[1, :]
+            data = data[:int(len(data)*n_samples)]
 
         dat_sizes[i] = data.shape[0]
         comp_dat.append(data)
     # min_size = int(np.amin(dat_sizes))
-    fig, axes = plt.subplots(len(file_paths), len(file_paths))
+    subplot_dim = [len(file_paths) for i in range(2)]
+    fig_size_mul = [6, 4]
+    fig, axes = plt.subplots(
+        *subplot_dim,
+        figsize=tuple([i*j for i, j in zip(subplot_dim, fig_size_mul)]))
     fig.tight_layout()
 
     if not hasattr(axes, "__iter__"):
         axes.grid(True)
+        # eighth = int(len(comp_dat[0]) / 8)
+        # axes.plot(1.0/(comp_dat[0][:eighth]))
+        # axes.axvline(int(len(comp_dat[0]) / 8), c="green")
         axes.plot(comp_dat[0])
         axes.set_title(os.path.basename(file_paths[0]))
     else:
@@ -51,15 +75,11 @@ def plot_dump_files(*file_paths, no_header=False, complex=False):
                     ax.plot(comp_dat[i])
                     ax.set_title(os.path.basename(file_paths[row]))
                 elif row > col:
-                    x_corr = scipy.signal.fftconvolve(
-                        comp_dat[row],
-                        comp_dat[col][::-1],
-                        mode="same"
-                    )
-                    ax.plot(x_corr)
+                    res = op(comp_dat[row], comp_dat[col])
+                    ax.plot(res)
                     ax.set_title(
-                        (f"cross correlation:\n"
-                         f"{os.path.basename(file_paths[row])}\n"
+                        (f"{op_str}: "
+                         f"{os.path.basename(file_paths[row])}, "
                          f"{os.path.basename(file_paths[col])}"))
                 else:
                     ax.set_axis_off()
@@ -82,6 +102,15 @@ def create_parser():
     parser.add_argument('-c', "--complex",
                         dest="complex", action="store_true")
 
+    parser.add_argument('-n', "--n-samples",
+                        dest="n_samples", type=float)
+
+    parser.add_argument(
+        '-op', "--operation",
+        dest="op", type=str,
+        help=(f"Apply 'op' to each pair of input files. "
+              f"Available operations: {list(op_lookup.keys())}"))
+
     parser.add_argument("-v", "--verbose",
                         dest="verbose", action="store_true")
 
@@ -93,5 +122,7 @@ if __name__ == '__main__':
     plot_dump_files(
         *parsed.input_file_paths,
         no_header=parsed.no_header,
-        complex=parsed.complex
+        complex=parsed.complex,
+        n_samples=parsed.n_samples,
+        op_str=parsed.op
     )

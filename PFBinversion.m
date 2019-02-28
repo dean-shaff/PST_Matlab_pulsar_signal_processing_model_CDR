@@ -70,8 +70,8 @@ function inverted_filename = PFBinversion (filename_in, verbose_, method_)
   data_in = data_in(:, :, input_offset:end);
 
   if method == 1
-    os_keep_region = (OS_De/OS_Nu)*n_samples;
-    equalise_ripple = 0;
+    os_keep_region = round((OS_De/OS_Nu)*n_samples);
+    equalise_ripple = 1;
     fine_channels = zeros(n_pol, n_chan, os_keep_region);
 
     % process fine channels
@@ -382,6 +382,7 @@ function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, equalise_ripple_, v
   discard = (1.0 - (OS_De/OS_Nu))/2.0;
 
   % discard low frequencies.
+  % This is actually discarding high frequency components -- DCS
   F1 = F1(round(discard*Nin)+1:round((1.0-discard)*Nin));
 
   if verbose
@@ -393,7 +394,20 @@ function F1=fine_chan_proc(data_in, Nin, chan, OS_Nu, OS_De, equalise_ripple_, v
   if equalise_ripple
       % load PFB prototype filter transfer function
       load('config/TF_points.mat');
+      figure;
+      subplot(211); plot(abs(H0))
+      size_H0 = size(H0);
+      passbandLength = round(size_H0(1) / 8);
+      sub_H0 = ones(passbandLength*2 + 1, 1);
+      for ii = 1:passbandLength
+          sub_H0(ii, 1) = 1.0/abs(H0(passbandLength-ii+2));
+          sub_H0(passbandLength+ii, 1) = 1.0/abs(H0(ii+1));
+      end;
+      subplot(212); plot(sub_H0);
+      pause;
 
+      % size(H0)
+      % Nin
       % use just the baseband passband section of transfer function
       % - apply to both halves of channel
       passband_len = (Nin/2)*OS_De/OS_Nu;

@@ -23,6 +23,7 @@ matlab_freqz_file_path = os.path.join(cur_dir, "config", "TF_points.mat")
 
 plot = False
 
+
 def main():
 
     fir_obj = scipy.io.loadmat(fir_filter_file_path)
